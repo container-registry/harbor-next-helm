@@ -1,0 +1,17 @@
+{{- if .Values.exporter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "harbor.fullname" . }}-exporter
+  labels:
+    {{- include "harbor.componentLabels" (dict "root" . "component" "exporter") | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 8001
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "exporter") | nindent 4 }}
+{{- end }}

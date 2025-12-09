@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "harbor.fullname" . }}-core
+  labels:
+    {{- include "harbor.componentLabels" (dict "root" . "component" "core") | nindent 4 }}
+data:
+  # Harbor Core configuration
+  EXT_ENDPOINT: {{ include "harbor.externalURL" . | quote }}
+  CORE_URL: {{ include "harbor.core.url" . | quote }}
+  PORTAL_URL: {{ include "harbor.portal.url" . | quote }}
+  REGISTRY_URL: {{ include "harbor.registry.url" . | quote }}
+  REGISTRYCTL_URL: {{ include "harbor.registryctl.url" . | quote }}
+  JOBSERVICE_URL: {{ include "harbor.jobservice.url" . | quote }}
+  {{- if .Values.trivy.enabled }}
+  TRIVY_ADAPTER_URL: {{ include "harbor.trivy.url" . | quote }}
+  {{- end }}
+
+  # Database configuration
+  POSTGRESQL_HOST: {{ include "harbor.database.host" . | quote }}
+  POSTGRESQL_PORT: {{ include "harbor.database.port" . | quote }}
+  POSTGRESQL_DATABASE: {{ include "harbor.database.database" . | quote }}
+  POSTGRESQL_USERNAME: {{ include "harbor.database.username" . | quote }}
+  POSTGRESQL_SSLMODE: {{ include "harbor.database.sslmode" . | quote }}
+  POSTGRESQL_MAX_IDLE_CONNS: {{ .Values.database.maxIdleConns | default 100 | quote }}
+  POSTGRESQL_MAX_OPEN_CONNS: {{ .Values.database.maxOpenConns | default 900 | quote }}
+
+  # Redis configuration
+  _REDIS_URL_CORE: {{ include "harbor.redis.url" . | quote }}
+  _REDIS_URL_REG: {{ include "harbor.redis.url" . | quote }}
+
+  # Logging
+  LOG_LEVEL: {{ .Values.logLevel | default "info" | quote }}
+
+  # Config via toEnvVars
+  {{- if .Values.core.config }}
+  {{- include "harbor.toEnvVars" (dict "values" .Values.core.config "prefix" "" "isSecret" false) | nindent 2 }}
+  {{- end }}

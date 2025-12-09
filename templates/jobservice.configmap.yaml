@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "harbor.fullname" . }}-jobservice
+  labels:
+    {{- include "harbor.componentLabels" (dict "root" . "component" "jobservice") | nindent 4 }}
+data:
+  # Jobservice configuration
+  CORE_URL: {{ include "harbor.core.url" . | quote }}
+  REGISTRY_URL: {{ include "harbor.registry.url" . | quote }}
+  REGISTRYCTL_URL: {{ include "harbor.registryctl.url" . | quote }}
+
+  # Redis configuration
+  _REDIS_URL_CORE: {{ include "harbor.redis.url" . | quote }}
+  _REDIS_URL_REG: {{ include "harbor.redis.url" . | quote }}
+
+  # Logging
+  LOG_LEVEL: {{ .Values.logLevel | default "info" | quote }}
+
+  # Config via toEnvVars
+  {{- if .Values.jobservice.config }}
+  {{- include "harbor.toEnvVars" (dict "values" .Values.jobservice.config "prefix" "" "isSecret" false) | nindent 2 }}
+  {{- end }}

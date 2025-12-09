@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "harbor.fullname" . }}-registry
+  labels:
+    {{- include "harbor.componentLabels" (dict "root" . "component" "registry") | nindent 4 }}
+spec:
+  replicas: {{ .Values.registry.replicas }}
+  selector:
+    matchLabels:
+      {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "registry") | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/registry.configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/registry.secret.yaml") . | sha256sum }}
+        {{- with .Values.registry.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "registry") | nindent 8 }}
+        {{- with .Values.registry.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "harbor.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "harbor.serviceAccountName" (dict "root" . "component" "registry" "serviceAccount" .Values.registry.serviceAccount) }}
+      securityContext:
+        {{- toYaml .Values.registry.podSecurityContext | nindent 8 }}
+      containers:
+        - name: registry
+          securityContext:
+            {{- toYaml .Values.registry.securityContext | nindent 12 }}
+          image: {{ include "harbor.image" (dict "imageRoot" .Values.registry.image "global" .Values.image "chart" .Chart) }}
+          imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+            - name: metrics
+              containerPort: 5001
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "harbor.fullname" . }}-registry
+            - secretRef:
+                name: {{ include "harbor.fullname" . }}-registry
+          env:
+            {{- with .Values.registry.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.registry.resources | nindent 12 }}
+          volumeMounts:
+            {{- if eq .Values.registry.storage.type "filesystem" }}
+            - name: storage
+              mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
+            {{- end }}
+            {{- if and (eq .Values.registry.storage.type "gcs") .Values.registry.storage.gcs.keyfile }}
+            - name: gcs-key
+              mountPath: /etc/registry/gcs
+              readOnly: true
+            {{- end }}
+        - name: registryctl
+          securityContext:
+            {{- toYaml .Values.registry.securityContext | nindent 12 }}
+          image: {{ include "harbor.image" (dict "imageRoot" .Values.registry.controller.image "global" .Values.image "chart" .Chart) }}
+          imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
+          ports:
+            - name: ctl
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "harbor.fullname" . }}-registry
+            - secretRef:
+                name: {{ include "harbor.fullname" . }}-registry
+          env:
+            {{- with .Values.registry.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: ctl
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: ctl
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.registry.resources | nindent 12 }}
+          volumeMounts:
+            {{- if eq .Values.registry.storage.type "filesystem" }}
+            - name: storage
+              mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
+            {{- end }}
+      volumes:
+        {{- if eq .Values.registry.storage.type "filesystem" }}
+        - name: storage
+          {{- if .Values.registry.persistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.registry.persistence.existingClaim }}
+          {{- else if .Values.registry.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "harbor.fullname" . }}-registry
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+        {{- if and (eq .Values.registry.storage.type "gcs") .Values.registry.storage.gcs.keyfile }}
+        - name: gcs-key
+          secret:
+            secretName: {{ include "harbor.fullname" . }}-registry-gcs
+        {{- end }}
+      {{- with .Values.registry.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.registry.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.registry.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

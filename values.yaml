@@ -1,0 +1,607 @@
+# ============================================================================
+# HARBOR NEXT HELM CHART - VALUES
+# ============================================================================
+# This chart uses the `toEnvVars` pattern for configuration.
+# Any Harbor config option can be set via component config/secret sections
+# without requiring chart updates.
+# ============================================================================
+
+# ============================================================================
+# 1. GLOBAL SETTINGS
+# ============================================================================
+
+# -- Global image settings
+image:
+  # -- Image pull policy for all Harbor components
+  pullPolicy: IfNotPresent
+
+# -- List of image pull secrets
+# @default -- []
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+
+# -- Override the full name
+fullnameOverride: ""
+
+# -- External URL for Harbor (REQUIRED)
+# This is the URL users will use to access Harbor (e.g., https://harbor.example.com)
+# @default -- ""
+externalURL: ""
+
+# -- Log level for all components (debug, info, warning, error, fatal)
+logLevel: info
+
+# -- Harbor admin password (initial setup)
+# @default -- "Harbor12345"
+harborAdminPassword: "Harbor12345"
+
+# -- Secret key for encryption (16 characters)
+# Used for encrypting credentials stored in the database
+# @default -- auto-generated
+secretKey: ""
+
+# ============================================================================
+# 2. INGRESS / GATEWAY
+# ============================================================================
+
+# -- Ingress configuration
+ingress:
+  # -- Enable ingress
+  enabled: true
+  # -- Ingress class name
+  className: ""
+  # -- Ingress annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # -- Ingress hosts configuration
+  hosts:
+    - host: harbor.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- Ingress TLS configuration
+  tls: []
+    # - secretName: harbor-tls
+    #   hosts:
+    #     - harbor.example.com
+
+# -- Gateway API configuration (alternative to ingress)
+gateway:
+  # -- Enable Gateway API HTTPRoute
+  enabled: false
+  # -- Gateway parent references
+  parentRefs: []
+    # - name: my-gateway
+    #   namespace: default
+  # -- Hostnames for the HTTPRoute
+  hostnames: []
+    # - harbor.example.com
+
+# ============================================================================
+# 3. HARBOR COMPONENTS
+# ============================================================================
+# Pattern per component:
+#   config: {} -> ConfigMap (via toEnvVars)
+#   secret: {} -> Secret (via toEnvVars)
+#   extraEnv: [] -> Additional env vars with valueFrom support
+#   K8s settings: image, replicas, resources, etc.
+# ============================================================================
+
+# --- Core ---
+core:
+  # -- Harbor Core application config (converted to env vars in ConfigMap)
+  # Any Harbor Core config can be set here without chart changes
+  # @default -- {}
+  config: {}
+    # Example: CSRF protection, token expiration, etc.
+    # csrf_key: ""
+    # token_expiration: 30
+
+  # -- Sensitive config for Core (converted to env vars in Secret)
+  # @default -- {}
+  secret: {}
+
+  # -- Extra environment variables with valueFrom support
+  # @default -- []
+  extraEnv: []
+    # - name: MY_SECRET
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: my-secret
+    #       key: value
+
+  # -- Core image settings
+  image:
+    # -- Core image repository
+    repository: goharbor/harbor-core
+    # -- Core image tag (defaults to appVersion)
+    tag: ""
+
+  # -- Number of Core replicas
+  replicas: 1
+
+  # -- Core resource requests and limits
+  resources: {}
+    # limits:
+    #   cpu: 1000m
+    #   memory: 1Gi
+    # requests:
+    #   cpu: 100m
+    #   memory: 256Mi
+
+  # -- Node selector for Core pods
+  nodeSelector: {}
+
+  # -- Tolerations for Core pods
+  tolerations: []
+
+  # -- Affinity rules for Core pods
+  affinity: {}
+
+  # -- Additional pod annotations for Core
+  podAnnotations: {}
+
+  # -- Additional pod labels for Core
+  podLabels: {}
+
+  # -- Service account settings for Core
+  serviceAccount:
+    # -- Create a service account for Core
+    create: true
+    # -- Service account name (auto-generated if empty)
+    name: ""
+    # -- Service account annotations
+    annotations: {}
+
+  # -- Security context for Core container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+
+  # -- Pod security context for Core
+  podSecurityContext:
+    fsGroup: 10000
+
+# --- Registry ---
+registry:
+  # -- Registry application config (converted to env vars in ConfigMap)
+  # @default -- {}
+  config: {}
+
+  # -- Registry storage configuration
+  storage:
+    # -- Storage type: filesystem, s3, azure, gcs, oss
+    type: filesystem
+    # -- Filesystem storage settings
+    filesystem:
+      rootdirectory: /storage
+    # -- S3 storage settings
+    s3: {}
+      # region: us-east-1
+      # bucket: my-harbor-bucket
+      # accesskey: ""
+      # secretkey: ""
+      # regionendpoint: ""
+      # encrypt: false
+      # secure: true
+      # v4auth: true
+      # chunksize: 5242880
+      # rootdirectory: ""
+    # -- Azure Blob storage settings
+    azure: {}
+      # accountname: ""
+      # accountkey: ""
+      # container: ""
+      # realm: core.windows.net
+    # -- Google Cloud Storage settings
+    gcs: {}
+      # bucket: ""
+      # keyfile: ""
+      # rootdirectory: ""
+      # chunksize: 5242880
+    # -- Alibaba Cloud OSS settings
+    oss: {}
+      # accesskeyid: ""
+      # accesskeysecret: ""
+      # region: ""
+      # bucket: ""
+      # endpoint: ""
+      # internal: false
+      # encrypt: false
+      # secure: true
+      # chunksize: 10485760
+      # rootdirectory: ""
+
+  # -- Sensitive config for Registry (converted to env vars in Secret)
+  # @default -- {}
+  secret: {}
+
+  # -- Extra environment variables with valueFrom support
+  # @default -- []
+  extraEnv: []
+
+  # -- Registry image settings
+  image:
+    # -- Registry image repository
+    repository: goharbor/registry-photon
+    # -- Registry image tag (defaults to appVersion)
+    tag: ""
+
+  # -- Registryctl image settings
+  controller:
+    image:
+      # -- Registryctl image repository
+      repository: goharbor/harbor-registryctl
+      # -- Registryctl image tag (defaults to appVersion)
+      tag: ""
+
+  # -- Number of Registry replicas
+  replicas: 1
+
+  # -- Registry persistence settings
+  persistence:
+    # -- Enable persistence for registry
+    enabled: true
+    # -- Storage class for PVC
+    storageClass: ""
+    # -- PVC access modes
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC size
+    size: 50Gi
+    # -- Existing PVC name (disables dynamic provisioning)
+    existingClaim: ""
+    # -- Annotations for PVC
+    annotations: {}
+
+  # -- Registry resource requests and limits
+  resources: {}
+
+  # -- Node selector for Registry pods
+  nodeSelector: {}
+
+  # -- Tolerations for Registry pods
+  tolerations: []
+
+  # -- Affinity rules for Registry pods
+  affinity: {}
+
+  # -- Additional pod annotations for Registry
+  podAnnotations: {}
+
+  # -- Additional pod labels for Registry
+  podLabels: {}
+
+  # -- Service account settings for Registry
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+  # -- Security context for Registry container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+
+  # -- Pod security context for Registry
+  podSecurityContext:
+    fsGroup: 10000
+
+# --- Portal ---
+portal:
+  # -- Portal application config (converted to env vars in ConfigMap)
+  # @default -- {}
+  config: {}
+
+  # -- Sensitive config for Portal (converted to env vars in Secret)
+  # @default -- {}
+  secret: {}
+
+  # -- Extra environment variables with valueFrom support
+  # @default -- []
+  extraEnv: []
+
+  # -- Portal image settings
+  image:
+    # -- Portal image repository
+    repository: goharbor/harbor-portal
+    # -- Portal image tag (defaults to appVersion)
+    tag: ""
+
+  # -- Number of Portal replicas
+  replicas: 1
+
+  # -- Portal resource requests and limits
+  resources: {}
+
+  # -- Node selector for Portal pods
+  nodeSelector: {}
+
+  # -- Tolerations for Portal pods
+  tolerations: []
+
+  # -- Affinity rules for Portal pods
+  affinity: {}
+
+  # -- Additional pod annotations for Portal
+  podAnnotations: {}
+
+  # -- Additional pod labels for Portal
+  podLabels: {}
+
+  # -- Service account settings for Portal
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+  # -- Security context for Portal container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+
+  # -- Pod security context for Portal
+  podSecurityContext:
+    fsGroup: 10000
+
+# --- Jobservice ---
+jobservice:
+  # -- Jobservice application config (converted to env vars in ConfigMap)
+  # @default -- {}
+  config: {}
+    # max_job_workers: 10
+    # job_loggers: file,stdout
+    # logger_sweeper_duration: 14
+
+  # -- Sensitive config for Jobservice (converted to env vars in Secret)
+  # @default -- {}
+  secret: {}
+
+  # -- Extra environment variables with valueFrom support
+  # @default -- []
+  extraEnv: []
+
+  # -- Jobservice image settings
+  image:
+    # -- Jobservice image repository
+    repository: goharbor/harbor-jobservice
+    # -- Jobservice image tag (defaults to appVersion)
+    tag: ""
+
+  # -- Number of Jobservice replicas
+  replicas: 1
+
+  # -- Jobservice resource requests and limits
+  resources: {}
+
+  # -- Node selector for Jobservice pods
+  nodeSelector: {}
+
+  # -- Tolerations for Jobservice pods
+  tolerations: []
+
+  # -- Affinity rules for Jobservice pods
+  affinity: {}
+
+  # -- Additional pod annotations for Jobservice
+  podAnnotations: {}
+
+  # -- Additional pod labels for Jobservice
+  podLabels: {}
+
+  # -- Service account settings for Jobservice
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+  # -- Security context for Jobservice container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+
+  # -- Pod security context for Jobservice
+  podSecurityContext:
+    fsGroup: 10000
+
+# --- Exporter ---
+exporter:
+  # -- Enable Harbor exporter for Prometheus metrics
+  enabled: true
+
+  # -- Exporter application config (converted to env vars in ConfigMap)
+  # @default -- {}
+  config: {}
+    # cache_time: 23
+    # cache_clean_interval: 14400
+
+  # -- Sensitive config for Exporter (converted to env vars in Secret)
+  # @default -- {}
+  secret: {}
+
+  # -- Extra environment variables with valueFrom support
+  # @default -- []
+  extraEnv: []
+
+  # -- Exporter image settings
+  image:
+    # -- Exporter image repository
+    repository: goharbor/harbor-exporter
+    # -- Exporter image tag (defaults to appVersion)
+    tag: ""
+
+  # -- Number of Exporter replicas
+  replicas: 1
+
+  # -- Exporter resource requests and limits
+  resources: {}
+
+  # -- Node selector for Exporter pods
+  nodeSelector: {}
+
+  # -- Tolerations for Exporter pods
+  tolerations: []
+
+  # -- Affinity rules for Exporter pods
+  affinity: {}
+
+  # -- Additional pod annotations for Exporter
+  podAnnotations: {}
+
+  # -- Additional pod labels for Exporter
+  podLabels: {}
+
+  # -- Service account settings for Exporter
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
+  # -- Security context for Exporter container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+
+  # -- Pod security context for Exporter
+  podSecurityContext:
+    fsGroup: 10000
+
+# ============================================================================
+# 4. DEPENDENCIES
+# ============================================================================
+
+# --- Database (EXTERNAL ONLY) ---
+database:
+  # -- Database host (required)
+  host: ""
+  # -- Database port
+  port: 5432
+  # -- Database username
+  username: postgres
+  # -- Database password (ignored if existingSecret is set)
+  password: ""
+  # -- Database name
+  database: registry
+  # -- SSL mode for database connection
+  sslmode: disable
+  # -- Maximum idle connections
+  maxIdleConns: 100
+  # -- Maximum open connections
+  maxOpenConns: 900
+  # -- Existing secret containing database credentials
+  # Must have key: POSTGRESQL_PASSWORD
+  existingSecret: ""
+
+# --- Valkey (Redis-compatible) ---
+valkey:
+  # -- Enable Valkey subchart
+  enabled: true
+  # -- Valkey architecture: standalone or replication
+  architecture: standalone
+  # -- Valkey authentication settings
+  auth:
+    enabled: true
+    password: ""
+  # -- Valkey master configuration
+  master:
+    persistence:
+      enabled: false
+
+# --- External Redis (when valkey.enabled=false) ---
+externalRedis:
+  # -- External Redis host
+  host: ""
+  # -- External Redis port
+  port: 6379
+  # -- External Redis password
+  password: ""
+  # -- Sentinel master set name (for Redis Sentinel)
+  sentinelMasterSet: ""
+  # -- Existing secret containing Redis password
+  # Must have key: REDIS_PASSWORD
+  existingSecret: ""
+
+# --- Trivy Scanner ---
+trivy:
+  # -- Enable Trivy scanner subchart
+  enabled: false
+
+# ============================================================================
+# 5. TLS CONFIGURATION
+# ============================================================================
+
+tls:
+  # -- cert-manager integration
+  certManager:
+    # -- Enable cert-manager for TLS certificates
+    enabled: false
+    # -- cert-manager issuer reference
+    issuerRef: {}
+      # name: letsencrypt-prod
+      # kind: ClusterIssuer
+    # -- Certificate duration
+    duration: 2160h # 90 days
+    # -- Certificate renewal before expiry
+    renewBefore: 360h # 15 days
+
+  # -- Custom TLS secrets (alternative to cert-manager)
+  customSecrets:
+    # -- TLS secret for core/portal
+    core: ""
+    # -- TLS secret for registry
+    registry: ""
+
+# ============================================================================
+# 6. MONITORING
+# ============================================================================
+
+metrics:
+  # -- Enable Prometheus ServiceMonitor
+  serviceMonitor:
+    # -- Create ServiceMonitor resource
+    enabled: false
+    # -- ServiceMonitor namespace (defaults to release namespace)
+    namespace: ""
+    # -- Additional labels for ServiceMonitor
+    labels: {}
+    # -- Scrape interval
+    interval: 30s
+    # -- Scrape timeout
+    scrapeTimeout: 10s
+    # -- Honor labels
+    honorLabels: true
+
+# ============================================================================
+# 7. ESCAPE HATCHES
+# ============================================================================
+
+# -- Extra static manifests to deploy
+# These are merged with chart labels and deployed as-is
+# @default -- []
+extraManifests: []
+  # - apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #     name: my-custom-config
+  #   data:
+  #     key: value
+
+# -- Extra templated manifests to deploy
+# These can use .Values, .Release, and other template functions
+# @default -- []
+extraTemplateManifests: []
+  # - |
+  #     apiVersion: v1
+  #     kind: ConfigMap
+  #     metadata:
+  #       name: {{ .Release.Name }}-custom
+  #     data:
+  #       externalURL: {{ .Values.externalURL }}

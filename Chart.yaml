@@ -1,0 +1,38 @@
+apiVersion: v2
+name: harbor
+description: A modern, simplified Helm chart for Harbor container registry
+type: application
+version: 3.0.0
+appVersion: "2.12.0"
+kubeVersion: ">=1.26.0-0"
+
+home: https://goharbor.io
+icon: https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/harbor-icon-color.png
+sources:
+  - https://github.com/goharbor/harbor
+  - https://github.com/goharbor/harbor-helm
+
+keywords:
+  - docker
+  - registry
+  - harbor
+  - container
+  - oci
+
+maintainers:
+  - name: Harbor Authors
+    url: https://github.com/goharbor
+
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/category: integration-delivery
+
+dependencies:
+  - name: valkey
+    version: "2.x.x"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: valkey.enabled
+  - name: harbor-scanner-trivy
+    version: "0.x.x"
+    repository: "https://aquasecurity.github.io/helm-charts/"
+    condition: trivy.enabled
