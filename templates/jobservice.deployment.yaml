@@ -43,11 +43,13 @@ spec:
             - secretRef:
                 name: {{ include "harbor.fullname" . }}-jobservice
           env:
+            {{- if .Values.valkey.auth.enabled }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "harbor.redis.secretName" . }}
                   key: {{ include "harbor.redis.secretKey" . }}
+            {{- end }}
             {{- with .Values.jobservice.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

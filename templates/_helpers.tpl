@@ -269,7 +269,7 @@ Return the Redis password secret name
 Return the Redis password key in the secret
 */}}
 {{- define "harbor.redis.secretKey" -}}
-{{- if .Values.valkey.enabled -}}
+{{- if .Values.valkey.auth.enabled -}}
 valkey-password
 {{- else -}}
 REDIS_PASSWORD
@@ -280,7 +280,11 @@ REDIS_PASSWORD
 Return the Redis URL for Harbor components
 */}}
 {{- define "harbor.redis.url" -}}
+{{- if .Values.valkey.auth.enabled -}}
 redis://:$(REDIS_PASSWORD)@{{ include "harbor.redis.host" . }}:{{ include "harbor.redis.port" . }}/0
+{{- else -}}
+redis://{{ include "harbor.redis.host" . }}:{{ include "harbor.redis.port" . }}/0
+{{- end -}}
 {{- end }}
 
 {{/*

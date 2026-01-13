@@ -80,11 +80,13 @@ spec:
               value: "harbor_job_service_namespace"
             - name: HARBOR_REDIS_TIMEOUT
               value: "3600"
+            {{- if .Values.valkey.auth.enabled }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "harbor.redis.secretName" . }}
                   key: {{ include "harbor.redis.secretKey" . }}
+            {{- end }}
             {{- with .Values.exporter.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
