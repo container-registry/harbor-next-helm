@@ -1,9 +1,9 @@
 dependencies:
 - name: valkey
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 2.4.7
+  repository: https://valkey.io/valkey-helm/
+  version: 0.9.2
 - name: harbor-scanner-trivy
   repository: https://aquasecurity.github.io/helm-charts/
   version: 0.31.2
-digest: sha256:1d535c79da54efff38f96bbe3c4537e91bf408ab0e3b7a2c3833730686891bae
-generated: "2025-12-08T18:52:39.813353+01:00"
+digest: sha256:8e090f1fb36991c269047f3720b06f98a1c25f4916218e5f7b9ea0f79688cb19
+generated: "2026-01-13T11:44:19.946015454-03:00"
