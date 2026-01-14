@@ -235,7 +235,7 @@ Return the Redis host
 */}}
 {{- define "harbor.redis.host" -}}
 {{- if .Values.valkey.enabled }}
-{{- include "harbor.fullname" . }}-valkey-master
+{{- .Release.Name }}-valkey
 {{- else }}
 {{- .Values.externalRedis.host }}
 {{- end }}
@@ -257,7 +257,7 @@ Return the Redis password secret name
 */}}
 {{- define "harbor.redis.secretName" -}}
 {{- if .Values.valkey.enabled }}
-{{- include "harbor.fullname" . }}-valkey
+{{- .Release.Name }}-valkey
 {{- else if .Values.externalRedis.existingSecret }}
 {{- .Values.externalRedis.existingSecret }}
 {{- else }}
