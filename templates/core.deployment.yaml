@@ -51,11 +51,13 @@ spec:
                 secretKeyRef:
                   name: {{ include "harbor.database.secretName" . }}
                   key: POSTGRESQL_PASSWORD
+            {{- if .Values.valkey.auth.enabled }}
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "harbor.redis.secretName" . }}
                   key: {{ include "harbor.redis.secretKey" . }}
+            {{- end }}
             {{- with .Values.core.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

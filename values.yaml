@@ -508,7 +508,7 @@ valkey:
   architecture: standalone
   # -- Valkey authentication settings
   auth:
-    enabled: true
+    enabled: false
     password: ""
   # -- Valkey master configuration
   master:
