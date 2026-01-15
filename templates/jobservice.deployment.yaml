@@ -39,7 +39,7 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "harbor.fullname" . }}-jobservice
+                name: {{ template "harbor.jobservice" . }}-env
             - secretRef:
                 name: {{ include "harbor.fullname" . }}-jobservice
           env:
@@ -68,9 +68,15 @@ spec:
           resources:
             {{- toYaml .Values.jobservice.resources | nindent 12 }}
           volumeMounts:
+            - name: jobservice-config
+              mountPath: /etc/jobservice/config.yml
+              subPath: config.yml
             - name: job-logs
               mountPath: /var/log/jobs
       volumes:
+        - name: jobservice-config
+          configMap:
+            name: "{{ template "harbor.jobservice" . }}"
         - name: job-logs
           emptyDir: {}
       {{- with .Values.jobservice.nodeSelector }}
