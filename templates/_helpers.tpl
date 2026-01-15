@@ -42,6 +42,12 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+{{/* matchLabels */}}
+{{- define "harbor.matchLabels" -}}
+release: {{ .Release.Name }}
+app: "{{ template "harbor.name" . }}"
+{{- end -}}
+
 {{/*
 Selector labels
 */}}
@@ -66,6 +72,7 @@ Usage: {{ include "harbor.componentSelectorLabels" (dict "root" . "component" "c
 {{- define "harbor.componentSelectorLabels" -}}
 {{ include "harbor.selectorLabels" .root }}
 app.kubernetes.io/component: {{ .component }}
+{{ include "harbor.matchLabels" .root }}
 {{- end }}
 
 {{/*
@@ -130,6 +137,20 @@ Example output (Secret):
 {{- end }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+=============================================================================
+Core helpers
+=============================================================================
+*/}}
+
+
+{{- define "harbor.secretKeyHelper" -}}
+  {{- if and (not (empty .data)) (hasKey .data .key) }}
+    {{- index .data .key | b64dec -}}
+  {{- end -}}
+{{- end -}}
 
 {{/*
 =============================================================================
@@ -280,12 +301,64 @@ REDIS_PASSWORD
 Return the Redis URL for Harbor components
 */}}
 {{- define "harbor.redis.url" -}}
-{{- if .Values.valkey.auth.enabled -}}
-redis://:$(REDIS_PASSWORD)@{{ include "harbor.redis.host" . }}:{{ include "harbor.redis.port" . }}/0
-{{- else -}}
-redis://{{ include "harbor.redis.host" . }}:{{ include "harbor.redis.port" . }}/0
-{{- end -}}
+  {{- $root := . -}}
+  {{- $host := include "harbor.redis.host" $root -}}
+  {{- $port := include "harbor.redis.port" $root -}}
+  {{- if .Values.valkey.auth.enabled -}}
+    {{- printf "redis://:$(REDIS_PASSWORD)@%s:%s" $host $port -}}
+  {{- else -}}
+    {{- printf "redis://%s:%s" $host $port -}}
+  {{- end -}}
 {{- end }}
+
+{{/*
+Return the Redis URL for Harbor core
+*/}}
+{{- define "harbor.redis.url.core" -}}
+  {{ include "harbor.redis.url" . }}/0?idle_timeout_seconds=30
+{{- end -}}
+
+{{- define "harbor.redis.scheme" -}}
+  {{- if .Values.valkey.enabled -}}
+    {{- print "redis" -}}
+  {{- else -}}
+    {{- if .Values.externalRedis.sentinelMasterSet -}}
+      {{- ternary "rediss+sentinel" "redis+sentinel" .Values.externalRedis.tlsOptions.enable -}}
+    {{- else -}}
+      {{- ternary "rediss" "redis" .Values.externalRedis.tlsOptions.enable -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+/*scheme://[:password@]addr/db_index?idle_timeout_seconds=30*/
+{{- define "harbor.redis.url.harbor" -}}
+    {{ include "harbor.redis.url" }}/6?idle_timeout_seconds=30
+{{- end -}}
+
+{{- define "harbor.redis.url.registry.num" -}}
+2
+{{- end -}}
+
+{{- define "harbor.redis.url.registry" -}}
+  {{ include "harbor.redis.url" . }}/{{ include "harbor.redis.url.registry.num" . }}?idle_timeout_seconds=30
+{{- end -}}
+
+{{- define "harbor.redis.url.jobservice" -}}
+  {{ include "harbor.redis.url" . }}/1?idle_timeout_seconds=30
+{{- end -}}
+
+{{- define "harbor.redis.url.cache" -}}
+  {{- $url := include "harbor.redis.url" . -}}
+  {{- printf "%s/7?idle_timeout_seconds=30" $url -}}
+{{- end -}}
+
+{{- define "harbor.redis.password" -}}
+  {{- ternary "" .Values.externalRedis.password (.Values.valkey.enabled) }}
+{{- end -}}
+
+{{- define "harbor.redis.enableTLS" -}}
+  {{- ternary "true" "false" (and (not .Values.valkey.enabled) (.externalRedis.tlsOptions.enable)) }}
+{{- end -}}
 
 {{/*
 =============================================================================
@@ -297,14 +370,54 @@ Internal URL helpers
 Return the Core internal URL
 */}}
 {{- define "harbor.core.url" -}}
-http://{{ include "harbor.fullname" . }}-core:80
+http://{{ include "harbor.fullname" . }}-core
 {{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.core.port" -}}
+8080
+{{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.core.service.port" -}}
+80
+{{- end }}
+
+{{/* TOKEN_SERVICE_URL */}}
+{{- define "harbor.token.service.url" -}}
+{{ include "harbor.core.url" . }}/service/token
+{{- end -}}
 
 {{/*
 Return the Portal internal URL
 */}}
 {{- define "harbor.portal.url" -}}
-http://{{ include "harbor.fullname" . }}-portal:80
+http://{{ include "harbor.fullname" . }}-portal
+{{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.portal.port" -}}
+80
+{{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.portal.service.port" -}}
+8080
+{{- end }}
+
+{{/*
+Return the Registry name
+*/}}
+{{- define "harbor.registry.name" -}}
+{{ include "harbor.fullname" . }}-registry
 {{- end }}
 
 {{/*
@@ -315,17 +428,17 @@ http://{{ include "harbor.fullname" . }}-registry:5000
 {{- end }}
 
 {{/*
+Container port
+*/}}
+{{- define "harbor.registry.port" -}}
+5000
+{{- end }}
+
+{{/*
 Return the Registry controller internal URL
 */}}
 {{- define "harbor.registryctl.url" -}}
 http://{{ include "harbor.fullname" . }}-registry:8080
-{{- end }}
-
-{{/*
-Return the Jobservice internal URL
-*/}}
-{{- define "harbor.jobservice.url" -}}
-http://{{ include "harbor.fullname" . }}-jobservice:80
 {{- end }}
 
 {{/*
@@ -403,7 +516,11 @@ TLS helpers
 {{/*
 Check if internal TLS is enabled
 */}}
-{{- define "harbor.internalTLS.enabled" -}}
+{{- define "harbor.component.scheme" -}}
+  {{- printf "http" -}}
+{{- end }}
+
+{{- define "harbor.middlware.enabled" -}}
 {{- false }}
 {{- end }}
 
@@ -427,6 +544,49 @@ Usage: {{ include "harbor.tlsSecretName" (dict "root" . "component" "core") }}
 {{- end }}
 {{- end }}
 
+{{- define "harbor.autoGenCert" -}}
+  {{- if and .Values.tls.enabled (eq .Values.tls.certSource "auto") -}}
+    {{- printf "true" -}}
+  {{- else -}}
+    {{- printf "false" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.autoGenCertForIngress" -}}
+  {{- if eq (include "harbor.autoGenCert" .) "true" -}}
+    {{- printf "true" -}}
+  {{- else -}}
+    {{- printf "false" -}}
+  {{- end -}}
+{{- end -}}
+
+
+{{- define "harbor.tlsCoreSecretForIngress" -}}
+  {{- if eq .Values.tls.certSource "none" -}}
+    {{- printf "" -}}
+  {{- else if eq .Values.tls.certSource "secret" -}}
+    {{- .Values.tls.secret.secretName -}}
+  {{- else -}}
+    {{- include "harbor.ingress" . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.tlsSecretForNginx" -}}
+  {{- if eq .Values.tls.certSource "secret" -}}
+    {{- .Values.tls.secret.secretName -}}
+  {{- else -}}
+    {{- include "harbor.nginx" . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.metricsPortName" -}}
+  {{- if .Values.tls.enabled }}
+    {{- printf "https-metrics" -}}
+  {{- else -}}
+    {{- printf "http-metrics" -}}
+  {{- end -}}
+{{- end -}}
+
 {{/*
 =============================================================================
 Validation helpers
@@ -444,3 +604,200 @@ Validate required values
 {{- fail "database.host is required. Please set database.host in your values." }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+=============================================================================
+Jobservice helpers
+=============================================================================
+*/}}
+
+{{- define "harbor.jobservice" -}}
+  {{- printf "%s-jobservice" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{/*
+Return the Jobservice internal URL
+*/}}
+{{- define "harbor.jobservice.url" -}}
+http://{{ include "harbor.fullname" . }}-jobservice
+{{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.jobservice.port" -}}
+8080
+{{- end }}
+
+{{- define "harbor.redis.urlForJobservice" -}}
+{{ include "harbor.redis.url" . }}
+{{- end -}}
+
+{{/*
+the max time to wait for a task to finish, if unfinished after max_update_hours, the task will be mark as error, but the task will continue to run, default value is 24
+*/}}
+{{- define "harbor.jobservice.reaper.max_update_hours" -}}
+24
+{{- end }}
+
+{{/*
+the max time for execution in running state without new task created
+*/}}
+{{- define "harbor.jobservice.reaper.max_dangling_hours" -}}
+168
+{{- end }}
+
+{{- define "harbor.jobservice.notification.webhook_job_max_retry" -}}
+3
+{{- end }}
+
+{{/*
+in seconds
+*/}}
+{{- define "harbor.jobservice.notification.webhook_job_http_client_timeout" -}}
+3
+{{- end }}
+
+{{- define "harbor.jobservice.secretName" -}}
+  {{- if eq .Values.tls.certSource "secret" -}}
+    {{- .Values.jobservice.secretName -}}
+  {{- else -}}
+    {{- printf "%s-jobservice-internal-tls" (include "harbor.fullname" .) -}}
+  {{- end -}}
+{{- end -}}
+
+
+{{/*
+=============================================================================
+Metrics helpers
+=============================================================================
+*/}}
+
+
+{{/*
+Container subpath
+*/}}
+{{- define "harbor.metrics.path" -}}
+/metrics
+{{- end }}
+
+{{/*
+Container port
+*/}}
+{{- define "harbor.metrics.port" -}}
+8001
+{{- end }}
+
+
+{{/*
+=============================================================================
+Proxy helpers
+=============================================================================
+*/}}
+
+
+{{- define "harbor.portal" -}}
+  {{- printf "%s-portal" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.core" -}}
+  {{- printf "%s-core" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.valkey" -}}
+  {{- printf "%s-valkey" .Release.Name -}}
+{{- end -}}
+
+{{- define "harbor.registry" -}}
+  {{- printf "%s-registry" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.registryCtl" -}}
+  {{- printf "%s-registryctl" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.database" -}}
+  {{- printf "%s-database" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.trivy" -}}
+  {{- printf "%s-trivy" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.nginx" -}}
+  {{- printf "%s-nginx" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.exporter" -}}
+  {{- printf "%s-exporter" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.ingress" -}}
+  {{- printf "%s-ingress" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.route" -}}
+  {{- printf "%s-route" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.noProxy" -}}
+  {{- printf "%s,%s,%s,%s,%s,%s,%s,%s" (include "harbor.core" .) (include "harbor.jobservice" .) (include "harbor.database" .) (include "harbor.registry" .) (include "harbor.portal" .) (include "harbor.trivy" .) (include "harbor.exporter" .) .Values.proxy.noProxy -}}
+{{- end -}}
+
+
+{{/*
+=============================================================================
+Trace helpers
+=============================================================================
+*/}}
+
+
+{{- define "harbor.trace.envs" -}}
+  TRACE_ENABLED: "{{ .Values.trace.enabled }}"
+  TRACE_SAMPLE_RATE: "{{ .Values.trace.sample_rate }}"
+  TRACE_NAMESPACE: "{{ .Values.trace.namespace }}"
+  {{- if .Values.trace.attributes }}
+  TRACE_ATTRIBUTES: {{ .Values.trace.attributes | toJson | squote }}
+  {{- end }}
+  {{- if eq .Values.trace.provider "jaeger" }}
+  TRACE_JAEGER_ENDPOINT: "{{ .Values.trace.jaeger.endpoint }}"
+  TRACE_JAEGER_USERNAME: "{{ .Values.trace.jaeger.username }}"
+  TRACE_JAEGER_AGENT_HOSTNAME: "{{ .Values.trace.jaeger.agent_host }}"
+  TRACE_JAEGER_AGENT_PORT: "{{ .Values.trace.jaeger.agent_port }}"
+  {{- else }}
+  TRACE_OTEL_ENDPOINT: "{{ .Values.trace.otel.endpoint }}"
+  TRACE_OTEL_URL_PATH: "{{ .Values.trace.otel.url_path }}"
+  TRACE_OTEL_COMPRESSION: "{{ .Values.trace.otel.compression }}"
+  TRACE_OTEL_INSECURE: "{{ .Values.trace.otel.insecure }}"
+  TRACE_OTEL_TIMEOUT: "{{ .Values.trace.otel.timeout }}"
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.trace.envs.core" -}}
+  {{- if .Values.trace.enabled }}
+  TRACE_SERVICE_NAME: "harbor-core"
+  {{ include "harbor.traceEnvs" . }}
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.trace.envs.jobservice" -}}
+  {{- if .Values.trace.enabled }}
+  TRACE_SERVICE_NAME: "harbor-jobservice"
+  {{ include "harbor.traceEnvs" . }}
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.trace.envs.registryctl" -}}
+  {{- if .Values.trace.enabled }}
+  TRACE_SERVICE_NAME: "harbor-registryctl"
+  {{ include "harbor.traceEnvs" . }}
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.trace.jaeger.password" -}}
+  {{- if and .Values.trace.enabled (eq .Values.trace.provider "jaeger") }}
+  TRACE_JAEGER_PASSWORD: "{{ .Values.trace.jaeger.password | default "" | b64enc }}"
+  {{- end }}
+{{- end -}}
+
