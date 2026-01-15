@@ -8,8 +8,9 @@ spec:
   type: ClusterIP
   ports:
     - name: http
-      port: 80
-      targetPort: http
+      port: {{ include "harbor.portal.port" . }}
+      targetPort: {{ include "harbor.portal.service.port" . }}
       protocol: TCP
   selector:
     {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "portal") | nindent 4 }}
+    component: portal
