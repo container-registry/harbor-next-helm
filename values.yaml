@@ -28,7 +28,7 @@ fullnameOverride: ""
 # -- External URL for Harbor (REQUIRED)
 # This is the URL users will use to access Harbor (e.g., https://harbor.example.com)
 # @default -- ""
-externalURL: ""
+externalURL: "https://new.harbor.local"
 
 # -- Log level for all components (debug, info, warning, error, fatal)
 logLevel: info
@@ -42,6 +42,17 @@ harborAdminPassword: "Harbor12345"
 # @default -- auto-generated
 secretKey: ""
 
+# The proxy settings for updating trivy vulnerabilities from the Internet and replicating
+# artifacts from/to the registries that cannot be reached directly
+proxy:
+  httpProxy:
+  httpsProxy:
+  noProxy: 127.0.0.1,localhost,.local,.internal
+  components:
+    - core
+    - jobservice
+    - trivy
+
 # ============================================================================
 # 2. INGRESS / GATEWAY
 # ============================================================================
@@ -51,22 +62,28 @@ ingress:
   # -- Enable ingress
   enabled: true
   # -- Ingress class name
-  className: ""
+  className: "nginx"
   # -- Ingress annotations
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "5"
     # kubernetes.io/ingress.class: nginx
     # cert-manager.io/cluster-issuer: letsencrypt-prod
   # -- Ingress hosts configuration
+  core: new.harbor.local
   hosts:
-    - host: harbor.example.com
+    - host: new.harbor.local
       paths:
         - path: /
           pathType: Prefix
   # -- Ingress TLS configuration
-  tls: []
-    # - secretName: harbor-tls
-    #   hosts:
-    #     - harbor.example.com
+  tls:
+    - secretName: harbor-tls
+      hosts:
+        - new.harbor.local
 
 # -- Gateway API configuration (alternative to ingress)
 gateway:
@@ -79,6 +96,14 @@ gateway:
   # -- Hostnames for the HTTPRoute
   hostnames: []
     # - harbor.example.com
+
+ipFamily:
+  # ipv6Enabled set to true if ipv6 is enabled in cluster, currently it affected the nginx related component
+  ipv6:
+    enabled: true
+  # ipv4Enabled set to true if ipv4 is enabled in cluster, currently it affected the nginx related component
+  ipv4:
+    enabled: true
 
 # ============================================================================
 # 3. HARBOR COMPONENTS
@@ -103,6 +128,7 @@ core:
   # -- Sensitive config for Core (converted to env vars in Secret)
   # @default -- {}
   secret: {}
+  existingSecret: ""
 
   # -- Extra environment variables with valueFrom support
   # @default -- []
@@ -116,9 +142,9 @@ core:
   # -- Core image settings
   image:
     # -- Core image repository
-    repository: goharbor/harbor-core
+    repository: 8gears.container-registry.com/8gcr/harbor-core
     # -- Core image tag (defaults to appVersion)
-    tag: ""
+    tag: "v2.14.3"
 
   # -- Number of Core replicas
   replicas: 1
@@ -170,15 +196,31 @@ core:
 registry:
   # -- Registry application config (converted to env vars in ConfigMap)
   # @default -- {}
+  upload_purging:
+    enabled: true
+    age: 168h
+    interval: 24h
+    dryrun: false
   config: {}
-
+  persistence:
+    enabled: true
+    persistentVolumeClaim:
+      registry:
+        existingClaim: ""
+  credentials:
+    username: "harbor_registry_user"
+    password: "egwmzyNp4SJYbjKytFjI5uZ"
+    existingSecret: ""
+    htpasswdString: "harbor_registry_user:$2a$10$WKYiYuofnG1/H8p.FLIbM.as.rbRiqzp167gk4UPOOrcAwbst1YCu"
   # -- Registry storage configuration
   storage:
+    disableredirect: false
     # -- Storage type: filesystem, s3, azure, gcs, oss
     type: filesystem
     # -- Filesystem storage settings
     filesystem:
       rootdirectory: /storage
+      subPath: ""
     # -- S3 storage settings
     s3: {}
       # region: us-east-1
@@ -227,17 +269,17 @@ registry:
   # -- Registry image settings
   image:
     # -- Registry image repository
-    repository: goharbor/registry-photon
+    repository: 8gears.container-registry.com/8gcr/harbor-registry
     # -- Registry image tag (defaults to appVersion)
-    tag: ""
+    tag: "v2.14.3"
 
   # -- Registryctl image settings
   controller:
     image:
       # -- Registryctl image repository
-      repository: goharbor/harbor-registryctl
+      repository: 8gears.container-registry.com/8gcr/harbor-registryctl
       # -- Registryctl image tag (defaults to appVersion)
-      tag: ""
+      tag: "v2.14.3"
 
   # -- Number of Registry replicas
   replicas: 1
@@ -309,9 +351,9 @@ portal:
   # -- Portal image settings
   image:
     # -- Portal image repository
-    repository: goharbor/harbor-portal
+    repository: 8gears.container-registry.com/8gcr/harbor-portal
     # -- Portal image tag (defaults to appVersion)
-    tag: ""
+    tag: "v2.14.3"
 
   # -- Number of Portal replicas
   replicas: 1
@@ -355,13 +397,15 @@ jobservice:
   # -- Jobservice application config (converted to env vars in ConfigMap)
   # @default -- {}
   config: {}
-    # max_job_workers: 10
+  max_job_workers: 4
     # job_loggers: file,stdout
     # logger_sweeper_duration: 14
 
   # -- Sensitive config for Jobservice (converted to env vars in Secret)
   # @default -- {}
   secret: {}
+  existingSecret: ""
+  existingSecretKey: ""
 
   # -- Extra environment variables with valueFrom support
   # @default -- []
@@ -370,9 +414,9 @@ jobservice:
   # -- Jobservice image settings
   image:
     # -- Jobservice image repository
-    repository: goharbor/harbor-jobservice
+    repository: 8gears.container-registry.com/8gcr/harbor-jobservice
     # -- Jobservice image tag (defaults to appVersion)
-    tag: ""
+    tag: "v2.14.3"
 
   # -- Number of Jobservice replicas
   replicas: 1
@@ -433,9 +477,9 @@ exporter:
   # -- Exporter image settings
   image:
     # -- Exporter image repository
-    repository: goharbor/harbor-exporter
+    repository: 8gears.container-registry.com/8gcr/harbor-exporter
     # -- Exporter image tag (defaults to appVersion)
-    tag: ""
+    tag: "v2.14.3"
 
   # -- Number of Exporter replicas
   replicas: 1
@@ -481,13 +525,13 @@ exporter:
 # --- Database (EXTERNAL ONLY) ---
 database:
   # -- Database host (required)
-  host: ""
+  host: "postgresql"
   # -- Database port
   port: 5432
   # -- Database username
   username: postgres
   # -- Database password (ignored if existingSecret is set)
-  password: ""
+  password: "test"
   # -- Database name
   database: registry
   # -- SSL mode for database connection
@@ -539,7 +583,9 @@ trivy:
 # ============================================================================
 
 tls:
+  enabled: true
   # -- cert-manager integration
+  certSource: auto
   certManager:
     # -- Enable cert-manager for TLS certificates
     enabled: false
@@ -564,6 +610,7 @@ tls:
 # ============================================================================
 
 metrics:
+  enabled: true
   # -- Enable Prometheus ServiceMonitor
   serviceMonitor:
     # -- Create ServiceMonitor resource
@@ -605,3 +652,39 @@ extraTemplateManifests: []
   #       name: {{ .Release.Name }}-custom
   #     data:
   #       externalURL: {{ .Values.externalURL }}
+
+
+# ============================================================================
+# 8. Tracing
+# ============================================================================
+
+trace:
+  enabled: false
+  # trace provider: jaeger or otel
+  # jaeger should be 1.26+
+  provider: jaeger
+  # set sample_rate to 1 if you wanna sampling 100% of trace data; set 0.5 if you wanna sampling 50% of trace data, and so forth
+  sample_rate: 1
+  # namespace used to differentiate different harbor services
+  # namespace:
+  # attributes is a key value dict contains user defined attributes used to initialize trace provider
+  # attributes:
+  #   application: harbor
+  jaeger:
+    # jaeger supports two modes:
+    #   collector mode(uncomment endpoint and uncomment username, password if needed)
+    #   agent mode(uncomment agent_host and agent_port)
+    endpoint: http://hostname:14268/api/traces
+    # username:
+    # password:
+    # agent_host: hostname
+    # export trace data by jaeger.thrift in compact mode
+    # agent_port: 6831
+  otel:
+    endpoint: hostname:4318
+    url_path: /v1/traces
+    compression: false
+    insecure: true
+    # timeout is in seconds
+    timeout: 10
+
