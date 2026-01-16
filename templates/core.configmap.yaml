@@ -19,11 +19,7 @@ data:
   CORE_URL: {{ include "harbor.core.url" . | quote }}
   PORTAL_URL: {{ include "harbor.portal.url" . | quote }}
   REGISTRY_URL: {{ include "harbor.registry.url" . | quote }}
-  REGISTRYCTL_URL: {{ include "harbor.registryctl.url" . | quote }}
   JOBSERVICE_URL: {{ include "harbor.jobservice.url" . | quote }}
-  {{- if .Values.trivy.enabled }}
-  TRIVY_ADAPTER_URL: {{ include "harbor.trivy.url" . | quote }}
-  {{- end }}
   TOKEN_SERVICE_URL: {{ include "harbor.token.service.url" . }}
   CORE_LOCAL_URL: "http://127.0.0.1:{{ include "harbor.core.port" . }}"
   WITH_TRIVY: {{ .Values.trivy.enabled | quote }}
