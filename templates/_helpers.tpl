@@ -42,11 +42,6 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{/* matchLabels */}}
-{{- define "harbor.matchLabels" -}}
-release: {{ .Release.Name }}
-app: "{{ template "harbor.name" . }}"
-{{- end -}}
 
 {{/*
 Selector labels
@@ -72,7 +67,6 @@ Usage: {{ include "harbor.componentSelectorLabels" (dict "root" . "component" "c
 {{- define "harbor.componentSelectorLabels" -}}
 {{ include "harbor.selectorLabels" .root }}
 app.kubernetes.io/component: {{ .component }}
-{{ include "harbor.matchLabels" .root }}
 {{- end }}
 
 {{/*
@@ -344,7 +338,7 @@ Return the Redis URL for Harbor core
 {{- end -}}
 
 {{- define "harbor.redis.url.jobservice" -}}
-  {{ include "harbor.redis.url" . }}/1?idle_timeout_seconds=30
+  {{ include "harbor.redis.url" . }}/1
 {{- end -}}
 
 {{- define "harbor.redis.url.cache" -}}
@@ -445,9 +439,7 @@ http://{{ include "harbor.fullname" . }}-registry:8080
 Return the Trivy adapter URL (if enabled)
 */}}
 {{- define "harbor.trivy.url" -}}
-{{- if .Values.trivy.enabled }}
 http://{{ include "harbor.fullname" . }}-harbor-scanner-trivy:8080
-{{- end }}
 {{- end }}
 
 {{/*
