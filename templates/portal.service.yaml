@@ -13,4 +13,3 @@ spec:
       protocol: TCP
   selector:
     {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "portal") | nindent 4 }}
-    component: portal
