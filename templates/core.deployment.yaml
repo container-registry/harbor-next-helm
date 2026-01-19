@@ -37,7 +37,7 @@ spec:
             - name: core-http
               containerPort: 8080
               protocol: TCP
-            - name: core-metrics
+            - name: {{ include "harbor.metrics.portName" . | quote }}
               containerPort: 8001
               protocol: TCP
           envFrom:
