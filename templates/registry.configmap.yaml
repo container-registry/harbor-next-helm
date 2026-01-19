@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "harbor.fullname" . }}-registry
+  name: {{ include "harbor.fullname" . }}-registry-env
   labels:
     {{- include "harbor.componentLabels" (dict "root" . "component" "registry") | nindent 4 }}
 data:

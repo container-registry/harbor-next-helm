@@ -7,17 +7,17 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: http
-      port: 5000
-      targetPort: http
+    - name: http-registry
+      port: {{ include "harbor.registry.port" . }}
+      targetPort: {{ include "harbor.registry.port" . }}
       protocol: TCP
-    - name: ctl
-      port: 8080
-      targetPort: ctl
+    - name: http-controller
+      port: {{ include "harbor.portal.service.port" . }}
+      targetPort: {{ include "harbor.portal.service.port" . }}
       protocol: TCP
-    - name: metrics
-      port: 5001
-      targetPort: metrics
+    - name: http-metrics
+      port: {{ include "harbor.metrics.port" . }}
+      targetPort: {{ include "harbor.metrics.port" . }}
       protocol: TCP
   selector:
     {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "registry") | nindent 4 }}
