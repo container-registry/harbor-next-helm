@@ -298,7 +298,7 @@ REDIS_PASSWORD
 {{- end }}
 
 {{/*
-Return the Redis URL for Harbor components
+Return the Base Redis URL for Harbor components
 */}}
 {{- define "harbor.redis.url" -}}
   {{- $root := . -}}
