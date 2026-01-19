@@ -142,7 +142,7 @@ core:
   # -- Core image settings
   image:
     # -- Core image repository
-    repository: 8gears.container-registry.com/8gcr/harbor-core
+    repository: goharbor/harbor-core
     # -- Core image tag (defaults to appVersion)
     tag: "v2.14.3"
 
@@ -269,7 +269,7 @@ registry:
   # -- Registry image settings
   image:
     # -- Registry image repository
-    repository: 8gears.container-registry.com/8gcr/harbor-registry
+    repository: goharbor/harbor-registry
     # -- Registry image tag (defaults to appVersion)
     tag: "v2.14.3"
 
@@ -277,7 +277,7 @@ registry:
   controller:
     image:
       # -- Registryctl image repository
-      repository: 8gears.container-registry.com/8gcr/harbor-registryctl
+      repository: goharbor/harbor-registryctl
       # -- Registryctl image tag (defaults to appVersion)
       tag: "v2.14.3"
 
@@ -351,7 +351,7 @@ portal:
   # -- Portal image settings
   image:
     # -- Portal image repository
-    repository: 8gears.container-registry.com/8gcr/harbor-portal
+    repository: goharbor/harbor-portal
     # -- Portal image tag (defaults to appVersion)
     tag: "v2.14.3"
 
@@ -477,7 +477,7 @@ exporter:
   # -- Exporter image settings
   image:
     # -- Exporter image repository
-    repository: 8gears.container-registry.com/8gcr/harbor-exporter
+    repository: goharbor/harbor-exporter
     # -- Exporter image tag (defaults to appVersion)
     tag: "v2.14.3"
 
