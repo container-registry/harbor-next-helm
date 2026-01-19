@@ -777,7 +777,7 @@ Trace helpers
 {{- define "harbor.trace.envs.core" -}}
   {{- if .Values.trace.enabled }}
   TRACE_SERVICE_NAME: "harbor-core"
-  {{ include "harbor.traceEnvs" . }}
+  {{ include "harbor.trace.envs" . }}
   {{- end }}
 {{- end -}}
 
