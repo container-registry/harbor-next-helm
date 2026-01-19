@@ -209,9 +209,9 @@ registry:
         existingClaim: ""
   credentials:
     username: "harbor_registry_user"
-    password: "egwmzyNp4SJYbjKytFjI5uZ"
+    password: ""
     existingSecret: ""
-    htpasswdString: "harbor_registry_user:$2a$10$WKYiYuofnG1/H8p.FLIbM.as.rbRiqzp167gk4UPOOrcAwbst1YCu"
+    htpasswdString: ""
   # -- Registry storage configuration
   storage:
     disableredirect: false
@@ -525,13 +525,13 @@ exporter:
 # --- Database (EXTERNAL ONLY) ---
 database:
   # -- Database host (required)
-  host: postgresql.my-db.svc.cluster.local
+  host: ""
   # -- Database port
   port: 5432
   # -- Database username
-  username: postgres
+  username: ""
   # -- Database password (ignored if existingSecret is set)
-  password: "test"
+  password: ""
   # -- Database name
   database: registry
   # -- SSL mode for database connection
