@@ -414,7 +414,7 @@ jobservice:
   # -- Jobservice image settings
   image:
     # -- Jobservice image repository
-    repository: 8gears.container-registry.com/8gcr/harbor-jobservice
+    repository: goharbor/harbor-jobservice
     # -- Jobservice image tag (defaults to appVersion)
     tag: "v2.14.3"
 
