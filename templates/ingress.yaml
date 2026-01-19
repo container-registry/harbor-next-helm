@@ -25,7 +25,7 @@ spec:
     {{- range .Values.ingress.tls }}
     - hosts:
         {{- range .hosts }}
-        - {{ . }}
+        - {{ . | quote }}
         {{- end }}
       secretName: {{ include "harbor.ingress" $root }}
     {{- end }}
