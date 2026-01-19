@@ -10,11 +10,6 @@ data:
     #Server listening port
     protocol: {{ include "harbor.component.scheme" . | quote }}
     port: {{ include "harbor.jobservice.port" . }}
-    {{- if .Values.tls.enabled -}}
-    https_config:
-      cert: "/etc/harbor/ssl/jobservice/tls.crt"
-      key: "/etc/harbor/ssl/jobservice/tls.key"
-    {{- end }}
     worker_pool:
       workers: {{ .Values.jobservice.max_job_workers }}
       backend: "redis"
@@ -23,26 +18,14 @@ data:
         namespace: "harbor_job_service_namespace"
         idle_timeout_second: 3600
     job_loggers:
-      {{- if has "file" .Values.jobservice.jobLoggers }}
       - name: "FILE"
         level: {{ .Values.logLevel | upper }}
         settings: # Customized settings of logger
           base_dir: "/var/log/jobs"
         sweeper:
-          duration: {{ .Values.jobservice.loggerSweeperDuration }} #days
+          duration: 14 #days
           settings: # Customized settings of sweeper
             work_dir: "/var/log/jobs"
-      {{- end }}
-      {{- if has "database" .Values.jobservice.jobLoggers }}
-      - name: "DB"
-        level: {{ .Values.logLevel | upper }}
-        sweeper:
-          duration: {{ .Values.jobservice.loggerSweeperDuration }} #days
-      {{- end }}
-      {{- if has "stdout" .Values.jobservice.jobLoggers }}
-      - name: "STD_OUTPUT"
-        level: {{ .Values.logLevel | upper }}
-      {{- end }}
     metric:
       enabled: {{ .Values.metrics.enabled }}
       path: "{{ include "harbor.metrics.path" . }}"
