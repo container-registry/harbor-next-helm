@@ -54,8 +54,6 @@ data:
   POSTGRESQL_CONN_MAX_IDLE_TIME: {{ .Values.database.connMaxIdleTime }}
   POSTGRESQL_CONN_MAX_LIFETIME: {{ .Values.database.connMaxLifetime }}
   # Redis configuration
-  _REDIS_URL_CORE: {{ include "harbor.redis.url.core" . | quote }}
-  _REDIS_URL_REG: {{ include "harbor.redis.url" . | quote }}
   CHART_CACHE_DRIVER: "redis"
   _REDIS_URL_CORE: {{ include "harbor.redis.url.core" . | quote }}
   _REDIS_URL_REG: {{ include "harbor.redis.url.registry" . | quote }}
