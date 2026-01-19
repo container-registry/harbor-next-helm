@@ -69,7 +69,7 @@ Kubernetes: `>=1.26.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | https://aquasecurity.github.io/helm-charts/ | harbor-scanner-trivy | 0.x.x |
-| oci://registry-1.docker.io/bitnamicharts | valkey | 2.x.x |
+| https://valkey.io/valkey-helm/ | valkey | 0.9.x |
 
 ## Values
 
