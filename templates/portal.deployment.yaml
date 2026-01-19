@@ -32,7 +32,7 @@ spec:
           image: {{ include "harbor.image" (dict "imageRoot" .Values.portal.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
           ports:
-            - name: http
+            - name: portal-http
               containerPort: 8080
               protocol: TCP
           env:
@@ -42,17 +42,29 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: portal-http
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: portal-http
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
             {{- toYaml .Values.portal.resources | nindent 12 }}
+          volumeMounts:
+            - name: portal-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: portal-config
+          configMap:
+            name: "{{ template "harbor.portal" . }}"
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.portal.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

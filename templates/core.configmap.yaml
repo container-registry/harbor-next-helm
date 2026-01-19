@@ -26,7 +26,6 @@ data:
   TRIVY_ADAPTER_URL: {{ include "harbor.trivy.url" . | quote }}
   REGISTRY_STORAGE_PROVIDER_NAME: "{{ .Values.registry.storage.type }}"
   CONFIG_PATH: "/etc/core/app.conf"
-  PORTAL_URL: {{ include "harbor.portal.url" . | quote }}
   REGISTRY_CONTROLLER_URL: {{ include "harbor.registryctl.url" . }}
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
   {{- if has "core" .Values.proxy.components }}

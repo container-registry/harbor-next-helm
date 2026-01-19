@@ -298,7 +298,7 @@ REDIS_PASSWORD
 {{- end }}
 
 {{/*
-Return the Redis URL for Harbor components
+Return the Base Redis URL for Harbor components
 */}}
 {{- define "harbor.redis.url" -}}
   {{- $root := . -}}
@@ -332,7 +332,7 @@ Return the Redis URL for Harbor core
 
 /*scheme://[:password@]addr/db_index?idle_timeout_seconds=30*/
 {{- define "harbor.redis.url.harbor" -}}
-    {{ include "harbor.redis.url" }}/6?idle_timeout_seconds=30
+    {{ include "harbor.redis.url" . }}/6?idle_timeout_seconds=30
 {{- end -}}
 
 {{- define "harbor.redis.url.registry.num" -}}

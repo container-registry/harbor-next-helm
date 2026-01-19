@@ -8,9 +8,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: metrics
-      port: 8001
-      targetPort: metrics
+    - name: http-metrics
+      port: {{ include "harbor.metrics.port" . }}
+      targetPort: {{ include "harbor.metrics.port" . }}
       protocol: TCP
   selector:
     {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "exporter") | nindent 4 }}

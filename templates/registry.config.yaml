@@ -37,7 +37,7 @@ data:
       {{- else if eq $type "gcs" }}
       gcs:
         bucket: {{ $storage.gcs.bucket }}
-        {{- if not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity }}
+        {{- if not $storage.gcs.useWorkloadIdentity }}
         keyfile: /etc/registry/gcs-key.json
         {{- end }}
         {{- if $storage.gcs.rootdirectory }}
@@ -174,7 +174,7 @@ data:
       addrs:
         - {{ include "harbor.redis.host" . }}
       {{- if eq "valkey+sentinel" (include "harbor.redis.scheme" .) }}
-      sentinelMasterSet: {{ include "harbor.valkey.masterSet" . }}
+      sentinelMasterSet: {{ include "harbor.redis.masterSet" . }}
       {{- end }}
       db: {{ include "harbor.redis.url.registry.num" . }}
       {{- if not (eq (include "harbor.redis.password" .) "") }}
