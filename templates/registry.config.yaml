@@ -37,7 +37,7 @@ data:
       {{- else if eq $type "gcs" }}
       gcs:
         bucket: {{ $storage.gcs.bucket }}
-        {{- if not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity }}
+        {{- if not $storage.gcs.useWorkloadIdentity }}
         keyfile: /etc/registry/gcs-key.json
         {{- end }}
         {{- if $storage.gcs.rootdirectory }}
