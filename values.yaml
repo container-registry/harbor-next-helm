@@ -62,7 +62,7 @@ ingress:
   # -- Enable ingress
   enabled: true
   # -- Ingress class name
-  className: "nginx"
+  className: ""
   # -- Ingress annotations
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
