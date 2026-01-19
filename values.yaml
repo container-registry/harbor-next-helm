@@ -28,7 +28,7 @@ fullnameOverride: ""
 # -- External URL for Harbor (REQUIRED)
 # This is the URL users will use to access Harbor (e.g., https://harbor.example.com)
 # @default -- ""
-externalURL: "https://new.harbor.local"
+externalURL: "https://harbor.example.com"
 
 # -- Log level for all components (debug, info, warning, error, fatal)
 logLevel: info
@@ -73,9 +73,9 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # cert-manager.io/cluster-issuer: letsencrypt-prod
   # -- Ingress hosts configuration
-  core: new.harbor.local
+  core: harbor.example.com
   hosts:
-    - host: new.harbor.local
+    - host: harbor.example.com
       paths:
         - path: /
           pathType: Prefix
@@ -83,7 +83,7 @@ ingress:
   tls:
     - secretName: harbor-tls
       hosts:
-        - new.harbor.local
+        - harbor.example.com
 
 # -- Gateway API configuration (alternative to ingress)
 gateway:
@@ -525,7 +525,7 @@ exporter:
 # --- Database (EXTERNAL ONLY) ---
 database:
   # -- Database host (required)
-  host: "postgresql"
+  host: postgresql.my-db.svc.cluster.local
   # -- Database port
   port: 5432
   # -- Database username
@@ -576,7 +576,7 @@ externalRedis:
 # --- Trivy Scanner ---
 trivy:
   # -- Enable Trivy scanner subchart
-  enabled: false
+  enabled: true
 
 # ============================================================================
 # 5. TLS CONFIGURATION
