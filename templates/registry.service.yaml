@@ -15,7 +15,7 @@ spec:
       port: {{ include "harbor.portal.service.port" . }}
       targetPort: {{ include "harbor.portal.service.port" . }}
       protocol: TCP
-    - name: http-metrics
+    - name: {{ include "harbor.metrics.portName" . | quote }}
       port: {{ include "harbor.metrics.port" . }}
       targetPort: {{ include "harbor.metrics.port" . }}
       protocol: TCP

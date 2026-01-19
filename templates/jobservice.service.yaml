@@ -11,7 +11,7 @@ spec:
       port: 80
       targetPort: {{ include "harbor.jobservice.port" . }}
       protocol: TCP
-    - name: http-metrics
+    - name: {{ include "harbor.metrics.portName" . | quote }}
       port: {{ include "harbor.metrics.port" . }}
       protocol: TCP
       targetPort: {{ include "harbor.metrics.port" . }}

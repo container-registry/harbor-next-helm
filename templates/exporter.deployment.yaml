@@ -33,7 +33,7 @@ spec:
           image: {{ include "harbor.image" (dict "imageRoot" .Values.exporter.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
           ports:
-            - name: metrics
+            - name: {{ include "harbor.metrics.portName" . | quote }}
               containerPort: 8001
               protocol: TCP
           env:
@@ -93,13 +93,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /metrics
-              port: metrics
+              port: {{ include "harbor.metrics.portName" . | quote }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /metrics
-              port: metrics
+              port: {{ include "harbor.metrics.portName" . | quote }}
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
