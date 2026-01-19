@@ -571,7 +571,7 @@ Usage: {{ include "harbor.tlsSecretName" (dict "root" . "component" "core") }}
   {{- end -}}
 {{- end -}}
 
-{{- define "harbor.metricsPortName" -}}
+{{- define "harbor.metrics.portName" -}}
   {{- if .Values.tls.enabled }}
     {{- printf "https-metrics" -}}
   {{- else -}}

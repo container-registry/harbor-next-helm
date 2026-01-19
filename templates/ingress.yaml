@@ -13,13 +13,10 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-    {{- if eq (.Values.tls.certSource) "auto" }}
-    kubernetes.io/ingress.class: nginx
-    {{- end }}
 spec:
-  # {{- if .Values.ingress.className }}
-  # ingressClassName: {{ .Values.ingress.className | quote }}
-  # {{- end }}
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- end }}
   {{- if .Values.ingress.tls }}
   tls:
     {{- range .Values.ingress.tls }}
@@ -27,12 +24,12 @@ spec:
         {{- range .hosts }}
         - {{ . | quote }}
         {{- end }}
-      secretName: {{ include "harbor.ingress" $root }}
+      secretName: {{ .secretName | default (include "harbor.ingress" $root) }}
     {{- end }}
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
-    - host: {{ .host }}
+    - host: {{ .host | quote }}
       http:
         paths:
           # API and Portal routes -> Core
