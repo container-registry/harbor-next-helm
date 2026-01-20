@@ -24,7 +24,7 @@ spec:
         {{- range .hosts }}
         - {{ . | quote }}
         {{- end }}
-      secretName: {{ .secretName | default (include "harbor.ingress" $root) }}
+      secretName: {{ .secretName | default (include "harbor.ingress.secret" $root) }}
     {{- end }}
   {{- end }}
   rules:

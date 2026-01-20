@@ -729,6 +729,11 @@ Proxy helpers
   {{- printf "%s-ingress" (include "harbor.fullname" .) -}}
 {{- end -}}
 
+{{- define "harbor.ingress.secret" -}}
+  {{- printf "harbor-tls" -}}
+{{- end -}}
+
+
 {{- define "harbor.route" -}}
   {{- printf "%s-route" (include "harbor.fullname" .) -}}
 {{- end -}}
