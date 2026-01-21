@@ -1,6 +1,6 @@
-* Create a Harbor deployment on rancher
+# Create a Harbor deployment on rancher
 
-** Deploy a database
+## Deploy a database
 
 We create a namespace where our database will be running:
 
@@ -64,7 +64,13 @@ CREATE DATABASE
 postgres=# exit
 ```
 
-** Deploy Harbor next
+## Deploy Harbor next
+
+We pull the Helm chart:
+
+```bash
+helm pull https://8gears.container-registry.com/harbor-next/chart
+```
 
 We update `values.yaml` to set the hostname, port and credentials of our
 database we will use with Harbor:
@@ -108,7 +114,7 @@ test-1-harbor-scanner-trivy-0               1/1     Running   0             61s
 test-1-valkey-59486f6977-nqb2z              1/1     Running   0             61s
 ```
 
-** Access Harbor from an Nginx ingress
+## Access Harbor from an Nginx ingress
 
 We will use an Nginx ingress to forward traffic to our host computer. Let us install it with Helm:
 
