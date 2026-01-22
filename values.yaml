@@ -149,9 +149,9 @@ core:
   # -- Core image settings
   image:
     # -- Core image repository
-    repository: goharbor/harbor-core
+    repository: 8gears.container-registry.com/8gcr/harbor-core
     # -- Core image tag (defaults to appVersion)
-    tag: "v2.14.1"
+    tag: "v2.14.3"
 
   # -- Number of Core replicas
   replicas: 1
@@ -276,17 +276,17 @@ registry:
   # -- Registry image settings
   image:
     # -- Registry image repository
-    repository: goharbor/registry-photon
+    repository: 8gears.container-registry.com/8gcr/harbor-registry
     # -- Registry image tag (defaults to appVersion)
-    tag: "v2.14.1"
+    tag: "v2.14.3"
 
   # -- Registryctl image settings
   controller:
     image:
       # -- Registryctl image repository
-      repository: goharbor/harbor-registryctl
+      repository: 8gears.container-registry.com/8gcr/harbor-registryctl
       # -- Registryctl image tag (defaults to appVersion)
-      tag: "v2.14.1"
+      tag: "v2.14.3"
 
   # -- Number of Registry replicas
   replicas: 1
@@ -358,9 +358,9 @@ portal:
   # -- Portal image settings
   image:
     # -- Portal image repository
-    repository: goharbor/harbor-portal
+    repository: 8gears.container-registry.com/8gcr/harbor-portal
     # -- Portal image tag (defaults to appVersion)
-    tag: "v2.14.1"
+    tag: "v2.14.3"
 
   # -- Number of Portal replicas
   replicas: 1
@@ -421,9 +421,9 @@ jobservice:
   # -- Jobservice image settings
   image:
     # -- Jobservice image repository
-    repository: goharbor/harbor-jobservice
+    repository: 8gears.container-registry.com/8gcr/harbor-jobservice
     # -- Jobservice image tag (defaults to appVersion)
-    tag: "v2.14.1"
+    tag: "v2.14.3"
 
   # -- Number of Jobservice replicas
   replicas: 1
@@ -484,9 +484,9 @@ exporter:
   # -- Exporter image settings
   image:
     # -- Exporter image repository
-    repository: goharbor/harbor-exporter
+    repository: 8gears.container-registry.com/8gcr/harbor-exporter
     # -- Exporter image tag (defaults to appVersion)
-    tag: "v2.14.1"
+    tag: "v2.14.3"
 
   # -- Number of Exporter replicas
   replicas: 1
@@ -561,10 +561,12 @@ valkey:
   auth:
     enabled: false
     password: ""
-  # -- Valkey master configuration
-  master:
-    persistence:
+  fullnameOverride: "valkey"
+  # -- Valkey master configuration                                                            
+  master:                                                                                     
+    persistence:                                                                              
       enabled: false
+
 
 # --- External Redis (when valkey.enabled=false) ---
 externalRedis:
@@ -583,7 +585,34 @@ externalRedis:
 # --- Trivy Scanner ---
 trivy:
   # -- Enable Trivy scanner subchart
-  enabled: true
+  enabled: false
+  fullnameOverride: "trivy"
+  podSecurityContext:
+    runAsUser: 10000
+    runAsNonRoot: true
+    fsGroup: 10000
+  trivy:
+    gitHubToken: ""
+    cache:
+      redis:
+        enabled: true
+        url: redis://valkey:6379
+  service:
+    port: 8080
+  # replicaCount: 0
+  # operator:
+  #   enabled: false
+    #  image:
+    # repository: 8gears.container-registry.com/8gcr/harbor-trivy-adapter
+    # -- Trivy adapter image tag (defaults to appVersion)
+    # tag: "v2.14.3"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
 
 # ============================================================================
 # 5. TLS CONFIGURATION

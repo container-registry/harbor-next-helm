@@ -250,7 +250,7 @@ Return the Redis host
 */}}
 {{- define "harbor.redis.host" -}}
 {{- if .Values.valkey.enabled }}
-{{- .Release.Name }}-valkey
+{{- printf "valkey" }}
 {{- else }}
 {{- .Values.externalRedis.host }}
 {{- end }}
@@ -339,6 +339,10 @@ Return the Redis URL for Harbor core
 
 {{- define "harbor.redis.url.jobservice" -}}
   {{ include "harbor.redis.url" . }}/1
+{{- end -}}
+
+{{- define "harbor.redis.url.trivy" -}}
+  {{ include "harbor.redis.url" . }}/5
 {{- end -}}
 
 {{- define "harbor.redis.url.cache" -}}
@@ -439,7 +443,7 @@ http://{{ include "harbor.fullname" . }}-registry:8080
 Return the Trivy adapter URL (if enabled)
 */}}
 {{- define "harbor.trivy.url" -}}
-http://{{ include "harbor.fullname" . }}-scanner-trivy:8080
+http://trivy:8080
 {{- end }}
 
 {{/*
