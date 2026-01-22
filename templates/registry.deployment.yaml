@@ -31,6 +31,57 @@ spec:
       securityContext:
         {{- toYaml .Values.registry.podSecurityContext | nindent 8 }}
       containers:
+        - name: registry
+          securityContext:
+            {{- toYaml .Values.registry.securityContext | nindent 12 }}
+          image: {{ include "harbor.image" (dict "imageRoot" .Values.registry.image "global" .Values.image "chart" .Chart) }}
+          imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+            - name: metrics
+              containerPort: 5001
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "harbor.registry.name" . }}
+            - secretRef:
+                name: {{ include "harbor.registry.name" . }}
+          env:
+            {{- with .Values.registry.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.registry.resources | nindent 12 }}
+          volumeMounts:
+            {{- if eq .Values.registry.storage.type "filesystem" }}
+            - name: storage
+              mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
+            {{- end }}
+            {{- if and (eq .Values.registry.storage.type "gcs") .Values.registry.storage.gcs.keyfile }}
+            - name: gcs-key
+              mountPath: /etc/registry/gcs
+              readOnly: true
+            {{- end }}
+            - mountPath: /etc/registry/passwd
+              name: registry-htpasswd
+              subPath: passwd
+            - mountPath: /etc/registry/config.yml
+              name: registry-config
+              subPath: config.yml
         - name: registryctl
           securityContext:
             {{- toYaml .Values.registry.securityContext | nindent 12 }}
@@ -42,11 +93,9 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "harbor.fullname" . }}-registryctl
+                name: {{ include "harbor.registry.name" . }}
             - secretRef:
-                name: {{ include "harbor.fullname" . }}-registry
-            - secretRef:
-                name: {{ include "harbor.fullname" . }}-registryctl
+                name: {{ include "harbor.registry.name" . }}
           env:
             {{- if .Values.registry.existingSecret }}
             - name: REGISTRY_HTTP_SECRET
@@ -77,20 +126,19 @@ spec:
             - name: NO_PROXY
               value: "{{ template "harbor.noProxy" . }}"
             {{- end }}
-
             {{- with .Values.registry.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           livenessProbe:
             httpGet:
               path: /api/health
-              port: ctl
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /api/health
-              port: ctl
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
@@ -106,28 +154,16 @@ spec:
             - name: registry-config
               mountPath: /etc/registryctl/config.yml
               subPath: ctl-config.yml
-
       volumes:
         - name: registry-htpasswd
           secret:
-            {{- if not .Values.registry.credentials.existingSecret }}
-            secretName: {{ include "harbor.registry.name" . }}-htpasswd
-            {{ else }}
-            secretName: {{ .Values.registry.credentials.existingSecret }}
-            {{- end }}
             items:
               - key: REGISTRY_HTPASSWD
                 path: passwd
-        - name: registry-config
-          configMap:
+            secretName: {{ include "harbor.registry.name" . }}-htpasswd
+        - configMap:
             name: {{ include "harbor.registry.name" . }}
-        - name: registry-data
-        {{- if and .Values.registry.persistence.enabled (eq .Values.registry.storage.type "filesystem") }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.registry.persistence.existingClaim | default (include "harbor.registry.name" .) }}
-        {{- else }}
-          emptyDir: {}
-        {{- end }}
+          name: registry-config
         {{- if eq .Values.registry.storage.type "filesystem" }}
         - name: storage
           {{- if .Values.registry.persistence.existingClaim }}
