@@ -9,6 +9,13 @@
 # ============================================================================
 # 1. GLOBAL SETTINGS
 # ============================================================================
+# -- Credentials to pull images
+# imageCredentials:
+#   registry: xyz.com
+#   username: xxx
+#   password: yyy
+#   email: zzz@xyz.com
+imageCredentials: {}
 
 # -- Global image settings
 image:
@@ -144,7 +151,7 @@ core:
     # -- Core image repository
     repository: goharbor/harbor-core
     # -- Core image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: "v2.14.1"
 
   # -- Number of Core replicas
   replicas: 1
@@ -269,9 +276,9 @@ registry:
   # -- Registry image settings
   image:
     # -- Registry image repository
-    repository: goharbor/harbor-registry
+    repository: goharbor/registry-photon
     # -- Registry image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: "v2.14.1"
 
   # -- Registryctl image settings
   controller:
@@ -279,7 +286,7 @@ registry:
       # -- Registryctl image repository
       repository: goharbor/harbor-registryctl
       # -- Registryctl image tag (defaults to appVersion)
-      tag: "v2.14.3"
+      tag: "v2.14.1"
 
   # -- Number of Registry replicas
   replicas: 1
@@ -353,7 +360,7 @@ portal:
     # -- Portal image repository
     repository: goharbor/harbor-portal
     # -- Portal image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: "v2.14.1"
 
   # -- Number of Portal replicas
   replicas: 1
@@ -416,7 +423,7 @@ jobservice:
     # -- Jobservice image repository
     repository: goharbor/harbor-jobservice
     # -- Jobservice image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: "v2.14.1"
 
   # -- Number of Jobservice replicas
   replicas: 1
@@ -479,7 +486,7 @@ exporter:
     # -- Exporter image repository
     repository: goharbor/harbor-exporter
     # -- Exporter image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: "v2.14.1"
 
   # -- Number of Exporter replicas
   replicas: 1
