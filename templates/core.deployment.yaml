@@ -92,6 +92,9 @@ spec:
             - name: secret-key
               mountPath: /etc/core/key
               subPath: key
+            - name: token-service-private-key
+              mountPath: /etc/core/private_key.pem
+              subPath: tls.key
             - name: psc
               mountPath: /etc/core/token
       volumes:
@@ -108,6 +111,13 @@ spec:
             items:
               - key: secretKey
                 path: key
+        - name: token-service-private-key
+          secret:
+            {{- if .Values.core.secretName }}
+            secretName: {{ .Values.core.secretName }}
+            {{- else }}
+            secretName: {{ template "harbor.core" . }}
+            {{- end }}
         - name: psc
           emptyDir: {}
       {{- with .Values.core.nodeSelector }}
