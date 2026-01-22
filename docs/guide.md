@@ -14,6 +14,12 @@ In this guide we use local storage, so we install a storage provisioner:
 kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.34/deploy/local-path-storage.yaml
 ```
 
+Set it as default:
+
+```bash
+kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
 We then create this storage class and set it as default:
 
 ```yaml
@@ -66,10 +72,11 @@ postgres=# exit
 
 ## Deploy Harbor next
 
-We pull the Helm chart:
+We pull the Helm chart and decompress it:
 
 ```bash
-helm pull https://8gears.container-registry.com/harbor-next/chart
+helm pull https://8gears.container-registry.com/harbor-next/chart/harbor
+tar xzvf harbor-x.x.x.tgz
 ```
 
 We update `values.yaml` to set the hostname, port and credentials of our
