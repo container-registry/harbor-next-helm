@@ -40,7 +40,7 @@ Harbor has been installed!
 {{- if .Values.valkey.enabled }}
    - Valkey (Redis): {{ include "harbor.fullname" . }}-valkey-master
 {{- end }}
-{{- if .Values.trivy.enabled }}
+{{ if index .Values "harbor-scanner-trivy" "enabled" }}
    - Trivy Scanner: {{ include "harbor.fullname" . }}-harbor-trivy
 {{- end }}
 

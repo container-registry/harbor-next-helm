@@ -583,29 +583,21 @@ externalRedis:
   existingSecret: ""
 
 # --- Trivy Scanner ---
-trivy:
+harbor-scanner-trivy:
   # -- Enable Trivy scanner subchart
-  enabled: false
+  enabled: true
   fullnameOverride: "trivy"
-  podSecurityContext:
-    runAsUser: 10000
-    runAsNonRoot: true
-    fsGroup: 10000
-  trivy:
-    gitHubToken: ""
-    cache:
-      redis:
-        enabled: true
-        url: redis://valkey:6379
-  service:
-    port: 8080
-  # replicaCount: 0
-  # operator:
-  #   enabled: false
-    #  image:
-    # repository: 8gears.container-registry.com/8gcr/harbor-trivy-adapter
+  scanner:
+    trivy:
+      gitHubToken: ""
+    redis:
+      poolURL: redis://valkey:6379
+
+  image:
+    registry: 8gears.container-registry.com
+    repository: 8gcr/trivy-adapter
     # -- Trivy adapter image tag (defaults to appVersion)
-    # tag: "v2.14.3"
+    tag: "v2.14.3"
   resources:
     requests:
       cpu: 200m

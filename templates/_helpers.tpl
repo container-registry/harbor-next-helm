@@ -446,6 +446,10 @@ Return the Trivy adapter URL (if enabled)
 http://trivy:8080
 {{- end }}
 
+{{- define "harbor.trivy.enabled" -}}
+{{ index .Values "harbor-scanner-trivy" "enabled" }}
+{{- end }}
+
 {{/*
 =============================================================================
 Service Account helpers

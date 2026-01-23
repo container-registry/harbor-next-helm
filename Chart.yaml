@@ -35,4 +35,4 @@ dependencies:
   - name: harbor-scanner-trivy
     version: "0.x.x"
     repository: "https://aquasecurity.github.io/helm-charts/"
-    condition: trivy.enabled
+    condition: harbor-scanner-trivy.enabled

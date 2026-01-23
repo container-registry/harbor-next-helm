@@ -22,7 +22,7 @@ data:
   JOBSERVICE_URL: {{ include "harbor.jobservice.url" . | quote }}
   TOKEN_SERVICE_URL: {{ include "harbor.token.service.url" . }}
   CORE_LOCAL_URL: "http://127.0.0.1:{{ include "harbor.core.port" . }}"
-  WITH_TRIVY: {{ .Values.trivy.enabled | quote }}
+  WITH_TRIVY: {{ include "harbor.trivy.enabled" . | quote }}
   TRIVY_ADAPTER_URL: {{ include "harbor.trivy.url" . | quote }}
   REGISTRY_STORAGE_PROVIDER_NAME: "{{ .Values.registry.storage.type }}"
   CONFIG_PATH: "/etc/core/app.conf"
