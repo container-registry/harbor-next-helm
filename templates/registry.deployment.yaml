@@ -64,6 +64,8 @@ spec:
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
@@ -106,11 +108,15 @@ spec:
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
             {{- end }}
       volumes:
+        - name: tmp
+          emptyDir: {}
         {{- if eq .Values.registry.storage.type "filesystem" }}
         - name: storage
           {{- if .Values.registry.persistence.existingClaim }}

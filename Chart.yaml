@@ -4,7 +4,7 @@ description: A modern, simplified Helm chart for Harbor container registry
 type: application
 version: 3.0.0
 appVersion: "2.12.0"
-kubeVersion: ">=1.26.0-0"
+kubeVersion: ">=1.33.0-0"
 
 home: https://goharbor.io
 icon: https://raw.githubusercontent.com/goharbor/website/main/static/img/logos/harbor-icon-color.png

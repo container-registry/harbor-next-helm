@@ -124,13 +124,12 @@ core:
   replicas: 1
 
   # -- Core resource requests and limits
-  resources: {}
-    # limits:
-    #   cpu: 1000m
-    #   memory: 1Gi
-    # requests:
-    #   cpu: 100m
-    #   memory: 256Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
 
   # -- Node selector for Core pods
   nodeSelector: {}
@@ -156,11 +155,27 @@ core:
     # -- Service account annotations
     annotations: {}
 
+  # -- PodDisruptionBudget for Core
+  pdb:
+    # -- Enable PodDisruptionBudget
+    enabled: false
+    # -- Minimum available pods (can be integer or percentage)
+    minAvailable: 1
+    # -- Maximum unavailable pods (alternative to minAvailable)
+    # maxUnavailable: 1
+
   # -- Security context for Core container
   securityContext:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Pod security context for Core
   podSecurityContext:
@@ -259,7 +274,12 @@ registry:
     annotations: {}
 
   # -- Registry resource requests and limits
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
 
   # -- Node selector for Registry pods
   nodeSelector: {}
@@ -282,11 +302,27 @@ registry:
     name: ""
     annotations: {}
 
+  # -- PodDisruptionBudget for Registry
+  pdb:
+    # -- Enable PodDisruptionBudget
+    enabled: false
+    # -- Minimum available pods (can be integer or percentage)
+    minAvailable: 1
+    # -- Maximum unavailable pods (alternative to minAvailable)
+    # maxUnavailable: 1
+
   # -- Security context for Registry container
   securityContext:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Pod security context for Registry
   podSecurityContext:
@@ -317,7 +353,12 @@ portal:
   replicas: 1
 
   # -- Portal resource requests and limits
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
 
   # -- Node selector for Portal pods
   nodeSelector: {}
@@ -340,11 +381,27 @@ portal:
     name: ""
     annotations: {}
 
+  # -- PodDisruptionBudget for Portal
+  pdb:
+    # -- Enable PodDisruptionBudget
+    enabled: false
+    # -- Minimum available pods (can be integer or percentage)
+    minAvailable: 1
+    # -- Maximum unavailable pods (alternative to minAvailable)
+    # maxUnavailable: 1
+
   # -- Security context for Portal container
   securityContext:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Pod security context for Portal
   podSecurityContext:
@@ -378,7 +435,12 @@ jobservice:
   replicas: 1
 
   # -- Jobservice resource requests and limits
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
 
   # -- Node selector for Jobservice pods
   nodeSelector: {}
@@ -401,11 +463,27 @@ jobservice:
     name: ""
     annotations: {}
 
+  # -- PodDisruptionBudget for Jobservice
+  pdb:
+    # -- Enable PodDisruptionBudget
+    enabled: false
+    # -- Minimum available pods (can be integer or percentage)
+    minAvailable: 1
+    # -- Maximum unavailable pods (alternative to minAvailable)
+    # maxUnavailable: 1
+
   # -- Security context for Jobservice container
   securityContext:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Pod security context for Jobservice
   podSecurityContext:
@@ -441,7 +519,12 @@ exporter:
   replicas: 1
 
   # -- Exporter resource requests and limits
-  resources: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
 
   # -- Node selector for Exporter pods
   nodeSelector: {}
@@ -464,11 +547,27 @@ exporter:
     name: ""
     annotations: {}
 
+  # -- PodDisruptionBudget for Exporter
+  pdb:
+    # -- Enable PodDisruptionBudget
+    enabled: false
+    # -- Minimum available pods (can be integer or percentage)
+    minAvailable: 1
+    # -- Maximum unavailable pods (alternative to minAvailable)
+    # maxUnavailable: 1
+
   # -- Security context for Exporter container
   securityContext:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Pod security context for Exporter
   podSecurityContext:

@@ -81,6 +81,8 @@ spec:
               subPath: app.conf
             - name: psc
               mountPath: /etc/core/token
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: config
           configMap:
@@ -90,6 +92,8 @@ spec:
                 path: app.conf
             optional: true
         - name: psc
+          emptyDir: {}
+        - name: tmp
           emptyDir: {}
       {{- with .Values.core.nodeSelector }}
       nodeSelector:

@@ -104,6 +104,12 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.exporter.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.exporter.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

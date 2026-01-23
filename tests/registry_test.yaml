@@ -150,6 +150,7 @@ tests:
       registry.persistence.enabled: true
       registry.persistence.existingClaim: my-existing-pvc
     asserts:
+      # storage volume is at index 1 (index 0 is tmp emptyDir)
       - equal:
-          path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          path: spec.template.spec.volumes[1].persistentVolumeClaim.claimName
           value: my-existing-pvc

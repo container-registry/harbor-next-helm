@@ -70,8 +70,12 @@ spec:
           volumeMounts:
             - name: job-logs
               mountPath: /var/log/jobs
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: job-logs
+          emptyDir: {}
+        - name: tmp
           emptyDir: {}
       {{- with .Values.jobservice.nodeSelector }}
       nodeSelector:

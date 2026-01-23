@@ -34,3 +34,8 @@ tests/
 Taskfile.yaml
 Taskfile.yml
 .pre-commit-config.yaml
+# Migration tool (development only)
+harbor-helm-migration-tool/
+migrator-tool/
+# Task cache
+.task/

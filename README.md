@@ -1,59 +1,150 @@
-# harbor
+# Harbor Helm Chart (Next Generation)
 
 ![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.12.0](https://img.shields.io/badge/AppVersion-2.12.0-informational?style=flat-square)
 
-A modern, simplified Helm chart for Harbor container registry
+A modern, production-ready Helm chart for [Harbor](https://goharbor.io/) - the cloud native registry for Kubernetes.
+
+This chart supports the following Harbor distributions:
+- **[Harbor](https://goharbor.io/)** - The open-source cloud native registry
+- **[Harbor-Next](https://harbor-next.io/)** - Enhanced Harbor with additional enterprise features
+- **[8gears Container Registry](https://8gears.com/container-registry/)** - Fully managed Harbor service
 
 ## TL;DR
 
 ```bash
-helm repo add harbor-next https://example.com/charts
-helm install my-harbor harbor-next/harbor \
+helm install my-harbor oci://registry.goharbor.io/harbor-next/charts/harbor \
   --set externalURL=https://harbor.example.com \
   --set database.host=my-postgres.example.com \
   --set database.password=secret
 ```
 
-## Introduction
+## Why This Chart?
 
-This is a modern, simplified Helm chart for [Harbor](https://goharbor.io/) - the cloud native registry for Kubernetes.
+This chart is a ground-up redesign of the Harbor Helm chart with modern Kubernetes best practices:
 
-### Key Features
+| Feature | Legacy harbor-helm | This Chart |
+|---------|-------------------|------------|
+| **Configuration** | 70+ helper templates, hardcoded env vars | `toEnvVars` pattern - any config works |
+| **Database** | Built-in PostgreSQL StatefulSet | External only (production best practice) |
+| **Redis** | Built-in Redis Deployment | Valkey subchart or external |
+| **Ingress** | nginx reverse proxy + Ingress | Direct Ingress/Gateway API |
+| **Security** | Basic security context | PSS Restricted profile compliant |
+| **Validation** | None | JSON Schema validation |
+| **Resource Defaults** | None (comments only) | Sensible defaults for all components |
+| **PodDisruptionBudget** | Not available | Per-component PDB support |
+| **Templates** | 48 files, 607-line helpers | ~28 files, 443-line helpers |
+| **values.yaml** | 1,116 lines | ~700 lines |
 
-- **Future-proof configuration**: Uses `toEnvVars` pattern - any Harbor config option works without chart updates
-- **Simplified architecture**: ~20 templates vs 48 in legacy chart
-- **Production-ready**: External database only (use CloudNativePG, AWS RDS, etc.)
-- **Flexible ingress**: Standard Ingress, Gateway API, or custom via `extraManifests`
-- **Optional components**: Valkey (Redis) subchart, Trivy scanner subchart
+## Key Features
 
-### What's Different from Legacy Chart
+### Future-Proof Configuration with `toEnvVars`
 
-| Legacy Chart | This Chart |
-|-------------|-----------|
-| Built-in PostgreSQL StatefulSet | External database only |
-| Built-in Redis Deployment | Optional Valkey subchart or external |
-| nginx reverse proxy | Direct Ingress/Gateway API |
-| 5 expose types | Ingress, Gateway, or `extraManifests` |
-| ~1,115 lines values.yaml | ~400 lines |
-| 48 template files | ~20 templates |
+The chart uses a unique `toEnvVars` pattern that converts nested YAML configuration to flat environment variables. This means **any Harbor configuration option works without chart updates**:
+
+```yaml
+core:
+  config:
+    # These become CONFIG_KEY and NESTED_VALUE env vars
+    config_key: "value"
+    nested:
+      value: "something"
+  secret:
+    # These become secrets (base64 encoded)
+    sensitive_data: "secret-value"
+```
+
+### Production-Ready Security
+
+All containers run with Pod Security Standards (PSS) **Restricted** profile:
+
+- `runAsNonRoot: true` - No root containers
+- `readOnlyRootFilesystem: true` - Immutable container filesystem
+- `allowPrivilegeEscalation: false` - No privilege escalation
+- `capabilities.drop: ["ALL"]` - No Linux capabilities
+- `seccompProfile.type: RuntimeDefault` - Seccomp filtering enabled
+
+### High Availability Ready
+
+- **PodDisruptionBudgets** - Ensure availability during node maintenance
+- **Resource requests/limits** - Guaranteed QoS with sensible defaults
+- **Affinity/Anti-affinity** - Control pod placement
+- **Multiple replicas** - Scale any component horizontally
+
+### Flexible Ingress Options
+
+1. **Standard Kubernetes Ingress** (default)
+2. **Gateway API HTTPRoute** (modern alternative)
+3. **extraManifests** for custom routing (Traefik IngressRoute, etc.)
+
+### Schema Validation
+
+Built-in `values.schema.json` provides:
+- IDE autocompletion and validation
+- Required field enforcement (`externalURL`, `database.host`)
+- Type checking and enum validation
+- Immediate feedback on configuration errors
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Ingress / Gateway API                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+   ┌─────────┐          ┌──────────┐          ┌──────────┐
+   │  Portal │          │   Core   │◄────────►│ Registry │
+   │  (UI)   │          │  (API)   │          │ (Images) │
+   └─────────┘          └────┬─────┘          └────┬─────┘
+                             │                     │
+                    ┌────────┴────────┐            │
+                    ▼                 ▼            │
+              ┌───────────┐    ┌──────────┐       │
+              │Jobservice │    │ Exporter │       │
+              │ (Tasks)   │    │(Metrics) │       │
+              └─────┬─────┘    └──────────┘       │
+                    │                             │
+        ┌───────────┴───────────┬─────────────────┘
+        ▼                       ▼
+   ┌─────────┐            ┌──────────┐
+   │ Valkey  │            │ Storage  │
+   │ (Redis) │            │(PVC/S3/..)│
+   └─────────┘            └──────────┘
+        │
+        ▼
+   ┌──────────────┐
+   │  PostgreSQL  │ (External - required)
+   └──────────────┘
+```
 
 ## Prerequisites
 
-- Kubernetes 1.26+
+- Kubernetes 1.33+ (we follow [endoflife.date/kubernetes](https://endoflife.date/kubernetes) for supported versions)
 - Helm 3.x
 - **External PostgreSQL database** (required)
-- PV provisioner (for registry persistence)
+- PV provisioner (for filesystem storage)
 
 ## Installing the Chart
 
+### Basic Installation
+
 ```bash
-helm install my-harbor harbor-next/harbor \
+helm install my-harbor oci://registry.goharbor.io/harbor-next/charts/harbor \
   --namespace harbor \
   --create-namespace \
   --set externalURL=https://harbor.example.com \
   --set database.host=postgres.example.com \
-  --set database.password=your-password \
-  --set ingress.hosts[0].host=harbor.example.com
+  --set database.password=your-password
+```
+
+### With Values File
+
+```bash
+helm install my-harbor oci://registry.goharbor.io/harbor-next/charts/harbor \
+  --namespace harbor \
+  --create-namespace \
+  -f values-production.yaml
 ```
 
 ## Uninstalling the Chart
@@ -62,190 +153,99 @@ helm install my-harbor harbor-next/harbor \
 helm uninstall my-harbor --namespace harbor
 ```
 
-## Requirements
+> **Note**: PersistentVolumeClaims are not deleted automatically. Remove them manually if needed.
 
-Kubernetes: `>=1.26.0-0`
+## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://aquasecurity.github.io/helm-charts/ | harbor-scanner-trivy | 0.x.x |
 | oci://registry-1.docker.io/bitnamicharts | valkey | 2.x.x |
+| https://aquasecurity.github.io/helm-charts/ | harbor-scanner-trivy | 0.x.x |
 
-## Values
+## Configuration
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| core.affinity | object | `{}` | Affinity rules for Core pods |
-| core.config | object | {} | Harbor Core application config (converted to env vars in ConfigMap) Any Harbor Core config can be set here without chart changes |
-| core.extraEnv | list | [] | Extra environment variables with valueFrom support |
-| core.image | object | `{"repository":"goharbor/harbor-core","tag":""}` | Core image settings |
-| core.image.repository | string | `"goharbor/harbor-core"` | Core image repository |
-| core.image.tag | string | `""` | Core image tag (defaults to appVersion) |
-| core.nodeSelector | object | `{}` | Node selector for Core pods |
-| core.podAnnotations | object | `{}` | Additional pod annotations for Core |
-| core.podLabels | object | `{}` | Additional pod labels for Core |
-| core.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Core |
-| core.replicas | int | `1` | Number of Core replicas |
-| core.resources | object | `{}` | Core resource requests and limits |
-| core.secret | object | {} | Sensitive config for Core (converted to env vars in Secret) |
-| core.securityContext | object | `{"runAsGroup":10000,"runAsNonRoot":true,"runAsUser":10000}` | Security context for Core container |
-| core.serviceAccount | object | `{"annotations":{},"create":true,"name":""}` | Service account settings for Core |
-| core.serviceAccount.annotations | object | `{}` | Service account annotations |
-| core.serviceAccount.create | bool | `true` | Create a service account for Core |
-| core.serviceAccount.name | string | `""` | Service account name (auto-generated if empty) |
-| core.tolerations | list | `[]` | Tolerations for Core pods |
-| database.database | string | `"registry"` | Database name |
-| database.existingSecret | string | `""` | Existing secret containing database credentials Must have key: POSTGRESQL_PASSWORD |
-| database.host | string | `""` | Database host (required) |
-| database.maxIdleConns | int | `100` | Maximum idle connections |
-| database.maxOpenConns | int | `900` | Maximum open connections |
-| database.password | string | `""` | Database password (ignored if existingSecret is set) |
-| database.port | int | `5432` | Database port |
-| database.sslmode | string | `"disable"` | SSL mode for database connection |
-| database.username | string | `"postgres"` | Database username |
-| exporter.affinity | object | `{}` | Affinity rules for Exporter pods |
-| exporter.config | object | {} | Exporter application config (converted to env vars in ConfigMap) |
-| exporter.enabled | bool | `true` | Enable Harbor exporter for Prometheus metrics |
-| exporter.extraEnv | list | [] | Extra environment variables with valueFrom support |
-| exporter.image | object | `{"repository":"goharbor/harbor-exporter","tag":""}` | Exporter image settings |
-| exporter.image.repository | string | `"goharbor/harbor-exporter"` | Exporter image repository |
-| exporter.image.tag | string | `""` | Exporter image tag (defaults to appVersion) |
-| exporter.nodeSelector | object | `{}` | Node selector for Exporter pods |
-| exporter.podAnnotations | object | `{}` | Additional pod annotations for Exporter |
-| exporter.podLabels | object | `{}` | Additional pod labels for Exporter |
-| exporter.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Exporter |
-| exporter.replicas | int | `1` | Number of Exporter replicas |
-| exporter.resources | object | `{}` | Exporter resource requests and limits |
-| exporter.secret | object | {} | Sensitive config for Exporter (converted to env vars in Secret) |
-| exporter.securityContext | object | `{"runAsGroup":10000,"runAsNonRoot":true,"runAsUser":10000}` | Security context for Exporter container |
-| exporter.serviceAccount | object | `{"annotations":{},"create":true,"name":""}` | Service account settings for Exporter |
-| exporter.tolerations | list | `[]` | Tolerations for Exporter pods |
-| externalRedis.existingSecret | string | `""` | Existing secret containing Redis password Must have key: REDIS_PASSWORD |
-| externalRedis.host | string | `""` | External Redis host |
-| externalRedis.password | string | `""` | External Redis password |
-| externalRedis.port | int | `6379` | External Redis port |
-| externalRedis.sentinelMasterSet | string | `""` | Sentinel master set name (for Redis Sentinel) |
-| externalURL | string | "" | External URL for Harbor (REQUIRED) This is the URL users will use to access Harbor (e.g., https://harbor.example.com) |
-| extraManifests | list | [] | Extra static manifests to deploy These are merged with chart labels and deployed as-is |
-| extraTemplateManifests | list | [] | Extra templated manifests to deploy These can use .Values, .Release, and other template functions |
-| fullnameOverride | string | `""` | Override the full name |
-| gateway | object | `{"enabled":false,"hostnames":[],"parentRefs":[]}` | Gateway API configuration (alternative to ingress) |
-| gateway.enabled | bool | `false` | Enable Gateway API HTTPRoute |
-| gateway.hostnames | list | `[]` | Hostnames for the HTTPRoute |
-| gateway.parentRefs | list | `[]` | Gateway parent references |
-| harborAdminPassword | string | "Harbor12345" | Harbor admin password (initial setup) |
-| image | object | `{"pullPolicy":"IfNotPresent"}` | Global image settings |
-| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for all Harbor components |
-| imagePullSecrets | list | [] | List of image pull secrets |
-| ingress | object | `{"annotations":{},"className":"","enabled":true,"hosts":[{"host":"harbor.example.com","paths":[{"path":"/","pathType":"Prefix"}]}],"tls":[]}` | Ingress configuration |
-| ingress.annotations | object | `{}` | Ingress annotations |
-| ingress.className | string | `""` | Ingress class name |
-| ingress.enabled | bool | `true` | Enable ingress |
-| ingress.hosts | list | `[{"host":"harbor.example.com","paths":[{"path":"/","pathType":"Prefix"}]}]` | Ingress hosts configuration |
-| ingress.tls | list | `[]` | Ingress TLS configuration |
-| jobservice.affinity | object | `{}` | Affinity rules for Jobservice pods |
-| jobservice.config | object | {} | Jobservice application config (converted to env vars in ConfigMap) |
-| jobservice.extraEnv | list | [] | Extra environment variables with valueFrom support |
-| jobservice.image | object | `{"repository":"goharbor/harbor-jobservice","tag":""}` | Jobservice image settings |
-| jobservice.image.repository | string | `"goharbor/harbor-jobservice"` | Jobservice image repository |
-| jobservice.image.tag | string | `""` | Jobservice image tag (defaults to appVersion) |
-| jobservice.nodeSelector | object | `{}` | Node selector for Jobservice pods |
-| jobservice.podAnnotations | object | `{}` | Additional pod annotations for Jobservice |
-| jobservice.podLabels | object | `{}` | Additional pod labels for Jobservice |
-| jobservice.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Jobservice |
-| jobservice.replicas | int | `1` | Number of Jobservice replicas |
-| jobservice.resources | object | `{}` | Jobservice resource requests and limits |
-| jobservice.secret | object | {} | Sensitive config for Jobservice (converted to env vars in Secret) |
-| jobservice.securityContext | object | `{"runAsGroup":10000,"runAsNonRoot":true,"runAsUser":10000}` | Security context for Jobservice container |
-| jobservice.serviceAccount | object | `{"annotations":{},"create":true,"name":""}` | Service account settings for Jobservice |
-| jobservice.tolerations | list | `[]` | Tolerations for Jobservice pods |
-| logLevel | string | `"info"` | Log level for all components (debug, info, warning, error, fatal) |
-| metrics.serviceMonitor | object | `{"enabled":false,"honorLabels":true,"interval":"30s","labels":{},"namespace":"","scrapeTimeout":"10s"}` | Enable Prometheus ServiceMonitor |
-| metrics.serviceMonitor.enabled | bool | `false` | Create ServiceMonitor resource |
-| metrics.serviceMonitor.honorLabels | bool | `true` | Honor labels |
-| metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
-| metrics.serviceMonitor.labels | object | `{}` | Additional labels for ServiceMonitor |
-| metrics.serviceMonitor.namespace | string | `""` | ServiceMonitor namespace (defaults to release namespace) |
-| metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
-| nameOverride | string | `""` | Override the chart name |
-| portal.affinity | object | `{}` | Affinity rules for Portal pods |
-| portal.config | object | {} | Portal application config (converted to env vars in ConfigMap) |
-| portal.extraEnv | list | [] | Extra environment variables with valueFrom support |
-| portal.image | object | `{"repository":"goharbor/harbor-portal","tag":""}` | Portal image settings |
-| portal.image.repository | string | `"goharbor/harbor-portal"` | Portal image repository |
-| portal.image.tag | string | `""` | Portal image tag (defaults to appVersion) |
-| portal.nodeSelector | object | `{}` | Node selector for Portal pods |
-| portal.podAnnotations | object | `{}` | Additional pod annotations for Portal |
-| portal.podLabels | object | `{}` | Additional pod labels for Portal |
-| portal.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Portal |
-| portal.replicas | int | `1` | Number of Portal replicas |
-| portal.resources | object | `{}` | Portal resource requests and limits |
-| portal.secret | object | {} | Sensitive config for Portal (converted to env vars in Secret) |
-| portal.securityContext | object | `{"runAsGroup":10000,"runAsNonRoot":true,"runAsUser":10000}` | Security context for Portal container |
-| portal.serviceAccount | object | `{"annotations":{},"create":true,"name":""}` | Service account settings for Portal |
-| portal.tolerations | list | `[]` | Tolerations for Portal pods |
-| registry.affinity | object | `{}` | Affinity rules for Registry pods |
-| registry.config | object | {} | Registry application config (converted to env vars in ConfigMap) |
-| registry.controller | object | `{"image":{"repository":"goharbor/harbor-registryctl","tag":""}}` | Registryctl image settings |
-| registry.controller.image.repository | string | `"goharbor/harbor-registryctl"` | Registryctl image repository |
-| registry.controller.image.tag | string | `""` | Registryctl image tag (defaults to appVersion) |
-| registry.extraEnv | list | [] | Extra environment variables with valueFrom support |
-| registry.image | object | `{"repository":"goharbor/registry-photon","tag":""}` | Registry image settings |
-| registry.image.repository | string | `"goharbor/registry-photon"` | Registry image repository |
-| registry.image.tag | string | `""` | Registry image tag (defaults to appVersion) |
-| registry.nodeSelector | object | `{}` | Node selector for Registry pods |
-| registry.persistence | object | `{"accessModes":["ReadWriteOnce"],"annotations":{},"enabled":true,"existingClaim":"","size":"50Gi","storageClass":""}` | Registry persistence settings |
-| registry.persistence.accessModes | list | `["ReadWriteOnce"]` | PVC access modes |
-| registry.persistence.annotations | object | `{}` | Annotations for PVC |
-| registry.persistence.enabled | bool | `true` | Enable persistence for registry |
-| registry.persistence.existingClaim | string | `""` | Existing PVC name (disables dynamic provisioning) |
-| registry.persistence.size | string | `"50Gi"` | PVC size |
-| registry.persistence.storageClass | string | `""` | Storage class for PVC |
-| registry.podAnnotations | object | `{}` | Additional pod annotations for Registry |
-| registry.podLabels | object | `{}` | Additional pod labels for Registry |
-| registry.podSecurityContext | object | `{"fsGroup":10000}` | Pod security context for Registry |
-| registry.replicas | int | `1` | Number of Registry replicas |
-| registry.resources | object | `{}` | Registry resource requests and limits |
-| registry.secret | object | {} | Sensitive config for Registry (converted to env vars in Secret) |
-| registry.securityContext | object | `{"runAsGroup":10000,"runAsNonRoot":true,"runAsUser":10000}` | Security context for Registry container |
-| registry.serviceAccount | object | `{"annotations":{},"create":true,"name":""}` | Service account settings for Registry |
-| registry.storage | object | `{"azure":{},"filesystem":{"rootdirectory":"/storage"},"gcs":{},"oss":{},"s3":{},"type":"filesystem"}` | Registry storage configuration |
-| registry.storage.azure | object | `{}` | Azure Blob storage settings |
-| registry.storage.filesystem | object | `{"rootdirectory":"/storage"}` | Filesystem storage settings |
-| registry.storage.gcs | object | `{}` | Google Cloud Storage settings |
-| registry.storage.oss | object | `{}` | Alibaba Cloud OSS settings |
-| registry.storage.s3 | object | `{}` | S3 storage settings |
-| registry.storage.type | string | `"filesystem"` | Storage type: filesystem, s3, azure, gcs, oss |
-| registry.tolerations | list | `[]` | Tolerations for Registry pods |
-| secretKey | string | auto-generated | Secret key for encryption (16 characters) Used for encrypting credentials stored in the database |
-| tls.certManager | object | `{"duration":"2160h","enabled":false,"issuerRef":{},"renewBefore":"360h"}` | cert-manager integration |
-| tls.certManager.duration | string | `"2160h"` | Certificate duration |
-| tls.certManager.enabled | bool | `false` | Enable cert-manager for TLS certificates |
-| tls.certManager.issuerRef | object | `{}` | cert-manager issuer reference |
-| tls.certManager.renewBefore | string | `"360h"` | Certificate renewal before expiry |
-| tls.customSecrets | object | `{"core":"","registry":""}` | Custom TLS secrets (alternative to cert-manager) |
-| tls.customSecrets.core | string | `""` | TLS secret for core/portal |
-| tls.customSecrets.registry | string | `""` | TLS secret for registry |
-| trivy.enabled | bool | `false` | Enable Trivy scanner subchart |
-| valkey.architecture | string | `"standalone"` | Valkey architecture: standalone or replication |
-| valkey.auth | object | `{"enabled":true,"password":""}` | Valkey authentication settings |
-| valkey.enabled | bool | `true` | Enable Valkey subchart |
-| valkey.master | object | `{"persistence":{"enabled":false}}` | Valkey master configuration |
+### Required Values
+
+| Key | Description |
+|-----|-------------|
+| `externalURL` | Public URL for Harbor (e.g., `https://harbor.example.com`) |
+| `database.host` | PostgreSQL host |
+| `database.password` | PostgreSQL password (or use `database.existingSecret`) |
+
+### Component Configuration
+
+Each Harbor component (core, portal, registry, jobservice, exporter) supports:
+
+| Key | Description |
+|-----|-------------|
+| `<component>.replicas` | Number of replicas |
+| `<component>.resources` | CPU/memory requests and limits |
+| `<component>.config` | Application config (becomes ConfigMap env vars) |
+| `<component>.secret` | Sensitive config (becomes Secret env vars) |
+| `<component>.extraEnv` | Additional env vars with `valueFrom` support |
+| `<component>.pdb.enabled` | Enable PodDisruptionBudget |
+| `<component>.pdb.minAvailable` | Minimum available pods during disruption |
+| `<component>.affinity` | Pod affinity rules |
+| `<component>.nodeSelector` | Node selection constraints |
+| `<component>.tolerations` | Pod tolerations |
+| `<component>.securityContext` | Container security context |
+| `<component>.podSecurityContext` | Pod security context |
+| `<component>.serviceAccount.create` | Create dedicated ServiceAccount |
+
+### Default Resource Allocations
+
+| Component | CPU Request | Memory Request | Memory Limit |
+|-----------|-------------|----------------|--------------|
+| Core | 100m | 256Mi | 512Mi |
+| Registry | 100m | 256Mi | 512Mi |
+| Portal | 100m | 128Mi | 256Mi |
+| Jobservice | 100m | 256Mi | 512Mi |
+| Exporter | 100m | 128Mi | 256Mi |
 
 ## Configuration Examples
 
-### Minimal Production Setup
+### Production Setup with High Availability
 
 ```yaml
 externalURL: https://harbor.example.com
 
+# External database (required)
 database:
   host: postgres.example.com
   password: your-db-password
+  sslmode: require
 
+# HA: Multiple replicas with PDB
+core:
+  replicas: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+portal:
+  replicas: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+registry:
+  replicas: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# Ingress with TLS
 ingress:
   enabled: true
   className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:
     - host: harbor.example.com
       paths:
@@ -256,8 +256,10 @@ ingress:
       hosts:
         - harbor.example.com
 
+# Use Valkey for Redis
 valkey:
   enabled: true
+  architecture: standalone
 ```
 
 ### S3 Storage Backend
@@ -271,11 +273,46 @@ registry:
       bucket: my-harbor-bucket
       accesskey: AKIAIOSFODNN7EXAMPLE
       secretkey: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      # Optional settings
+      regionendpoint: https://s3.us-east-1.amazonaws.com
+      encrypt: true
+      secure: true
+  persistence:
+    enabled: false  # Disable PVC when using S3
+```
+
+### Azure Blob Storage
+
+```yaml
+registry:
+  storage:
+    type: azure
+    azure:
+      accountname: mystorageaccount
+      accountkey: base64-encoded-key
+      container: harbor
   persistence:
     enabled: false
 ```
 
-### Gateway API
+### Google Cloud Storage
+
+```yaml
+registry:
+  storage:
+    type: gcs
+    gcs:
+      bucket: my-harbor-bucket
+      keyfile: |
+        {
+          "type": "service_account",
+          ...
+        }
+  persistence:
+    enabled: false
+```
+
+### Gateway API Instead of Ingress
 
 ```yaml
 ingress:
@@ -290,7 +327,7 @@ gateway:
     - harbor.example.com
 ```
 
-### External Redis
+### External Redis (Instead of Valkey)
 
 ```yaml
 valkey:
@@ -300,6 +337,54 @@ externalRedis:
   host: redis.example.com
   port: 6379
   password: redis-password
+  # For Redis Sentinel:
+  # sentinelMasterSet: mymaster
+```
+
+### cert-manager Integration
+
+```yaml
+tls:
+  certManager:
+    enabled: true
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+    duration: 2160h    # 90 days
+    renewBefore: 360h  # 15 days
+```
+
+### Custom Configuration via `toEnvVars`
+
+```yaml
+core:
+  config:
+    # Any Harbor Core config option
+    token_expiration: 30
+    robot_token_duration: 30
+    # Nested config becomes NESTED_KEY_HERE env var
+    nested:
+      key_here: value
+  secret:
+    # Sensitive values (stored in Secret)
+    csrf_key: "your-csrf-key"
+
+jobservice:
+  config:
+    max_job_workers: 20
+    job_loggers: "file,stdout"
+```
+
+### Prometheus ServiceMonitor
+
+```yaml
+metrics:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring  # Optional, defaults to release namespace
+    interval: 30s
+    labels:
+      release: prometheus
 ```
 
 ### CloudNativePG via extraManifests
@@ -316,15 +401,93 @@ extraManifests:
         size: 10Gi
 ```
 
-## Upgrading
+## Migrating from Legacy Harbor Chart
 
-### From Legacy Harbor Chart
+This chart is a redesign, not a drop-in replacement. Migration steps:
 
-This chart is not a direct upgrade path from the legacy Harbor chart. You should:
+1. **Backup your Harbor data** using Harbor's built-in backup or database dumps
+2. **Export your projects and artifacts** if needed
+3. **Deploy this chart** as a new installation
+4. **Migrate data** using one of:
+   - Harbor's replication feature (recommended)
+   - Database migration with external tooling
+   - Re-push images from your CI/CD pipeline
 
-1. Backup your Harbor data
-2. Deploy this chart as a new installation
-3. Migrate data using Harbor's replication feature
+A migration tool is available at `harbor-helm-migration-tool/` to convert your legacy `values.yaml`:
+
+```bash
+# Build the tool
+cd harbor-helm-migration-tool
+go build -o bin/harbor-migrate ./cmd/harbor-migrate
+
+# Convert values
+./bin/harbor-migrate --input old-values.yaml --output new-values.yaml
+```
+
+### Key Migration Differences
+
+| Legacy Setting | New Setting |
+|---------------|-------------|
+| `expose.type: ingress` | `ingress.enabled: true` |
+| `expose.ingress.*` | `ingress.*` |
+| `database.type: internal` | Not supported - use external DB |
+| `database.external.*` | `database.*` |
+| `redis.type: internal` | `valkey.enabled: true` |
+| `redis.external.*` | `externalRedis.*` |
+| `persistence.imageChartStorage.*` | `registry.storage.*` |
+| `nginx.*` | Not applicable - no nginx proxy |
+| `notary.*` | Not supported - Notary deprecated |
+| `chartmuseum.*` | Not supported - use OCI artifacts |
+
+## Troubleshooting
+
+### Schema Validation Errors
+
+If you see validation errors, check:
+- `externalURL` must be a valid URL starting with `http://` or `https://`
+- `database.host` is required
+- Resource values must be valid Kubernetes quantities
+
+### Pods CrashLooping
+
+Check logs with:
+```bash
+kubectl logs -n harbor deploy/my-harbor-core
+kubectl logs -n harbor deploy/my-harbor-registry
+```
+
+Common issues:
+- Database connection failed - verify `database.host` and credentials
+- Redis connection failed - verify Valkey is running or `externalRedis` config
+
+### Permission Denied Errors
+
+The chart uses `readOnlyRootFilesystem: true`. If a component needs to write:
+- Check if a writable volume mount is needed
+- Volumes for `/tmp` and other writable paths are pre-configured
+
+## Development
+
+### Run Tests
+
+```bash
+helm unittest .
+```
+
+### Lint Chart
+
+```bash
+helm lint . --set externalURL=https://example.com --set database.host=db
+```
+
+### Render Templates
+
+```bash
+helm template test . \
+  --set externalURL=https://example.com \
+  --set database.host=db \
+  --debug
+```
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)
