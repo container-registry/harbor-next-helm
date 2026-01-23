@@ -171,7 +171,7 @@ data:
         disable: {{ $storage.disableredirect }}
     redis:
       addrs:
-        - {{ include "harbor.redis.host" . }}
+        - {{ include "harbor.redis.host" . }}:{{ include "harbor.redis.port" . }}
       {{- if eq "valkey+sentinel" (include "harbor.redis.scheme" .) }}
       sentinelMasterSet: {{ include "harbor.redis.masterSet" . }}
       {{- end }}
@@ -189,9 +189,7 @@ data:
         idletimeout: 60s
     http:
       addr: :{{ include "harbor.registry.port" . }}
-      relativeurls: {{ .Values.registry.relativeurls }}
-      # set via environment variable
-      # secret: placeholder
+      relativeurls: false
       debug:
       {{- if .Values.metrics.enabled}}
         addr: :{{ include "harbor.metrics.port" . }}
