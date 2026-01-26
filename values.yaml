@@ -35,7 +35,7 @@ fullnameOverride: ""
 # -- External URL for Harbor (REQUIRED)
 # This is the URL users will use to access Harbor (e.g., https://harbor.example.com)
 # @default -- ""
-externalURL: "https://harbor.example.com"
+externalURL: ""
 
 # -- Log level for all components (debug, info, warning, error, fatal)
 logLevel: info
@@ -71,26 +71,22 @@ ingress:
   # -- Ingress class name
   className: ""
   # -- Ingress annotations
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "30"
-    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "5"
-    # kubernetes.io/ingress.class: nginx
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-  # -- Ingress hosts configuration
-  core: harbor.example.com
-  hosts:
-    - host: harbor.example.com
-      paths:
-        - path: /
-          pathType: Prefix
+  annotations: {}
+    # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  # -- Harbor core hostname (REQUIRED when ingress enabled)
+  core: ""
+  # -- Additional ingress hosts
+  hosts: []
+    # - host: harbor.example.com
+    #   paths:
+    #     - path: /
+    #       pathType: Prefix
   # -- Ingress TLS configuration
-  tls:
-    - secretName: harbor-tls
-      hosts:
-        - harbor.example.com
+  tls: []
+    # - secretName: harbor-tls
+    #   hosts:
+    #     - harbor.example.com
 
 # -- Gateway API configuration (alternative to ingress)
 gateway:
@@ -135,7 +131,10 @@ core:
   # -- Sensitive config for Core (converted to env vars in Secret)
   # @default -- {}
   secret: {}
+  # -- Use existing secret for Core secret
   existingSecret: ""
+  # -- Key in existing secret containing the Core secret
+  existingSecretKey: "secret"
 
   # -- Extra environment variables with valueFrom support
   # @default -- []
@@ -151,7 +150,7 @@ core:
     # -- Core image repository
     repository: 8gears.container-registry.com/8gcr/harbor-core
     # -- Core image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
 
   # -- Number of Core replicas
   replicas: 1
@@ -201,6 +200,8 @@ core:
 
 # --- Registry ---
 registry:
+  # -- If true, the registry returns relative URLs in Location headers
+  relativeurls: false
   # -- Registry application config (converted to env vars in ConfigMap)
   # @default -- {}
   upload_purging:
@@ -278,7 +279,7 @@ registry:
     # -- Registry image repository
     repository: 8gears.container-registry.com/8gcr/harbor-registry
     # -- Registry image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
 
   # -- Registryctl image settings
   controller:
@@ -286,7 +287,7 @@ registry:
       # -- Registryctl image repository
       repository: 8gears.container-registry.com/8gcr/harbor-registryctl
       # -- Registryctl image tag (defaults to appVersion)
-      tag: "v2.14.3"
+      tag: ""
 
   # -- Number of Registry replicas
   replicas: 1
@@ -360,7 +361,7 @@ portal:
     # -- Portal image repository
     repository: 8gears.container-registry.com/8gcr/harbor-portal
     # -- Portal image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
 
   # -- Number of Portal replicas
   replicas: 1
@@ -411,8 +412,10 @@ jobservice:
   # -- Sensitive config for Jobservice (converted to env vars in Secret)
   # @default -- {}
   secret: {}
+  # -- Use existing secret for Jobservice secret
   existingSecret: ""
-  existingSecretKey: "REGISTRY_HTTP_SECRET"
+  # -- Key in existing secret containing the Jobservice secret
+  existingSecretKey: "JOBSERVICE_SECRET"
 
   # -- Extra environment variables with valueFrom support
   # @default -- []
@@ -423,7 +426,7 @@ jobservice:
     # -- Jobservice image repository
     repository: 8gears.container-registry.com/8gcr/harbor-jobservice
     # -- Jobservice image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
 
   # -- Number of Jobservice replicas
   replicas: 1
@@ -486,7 +489,7 @@ exporter:
     # -- Exporter image repository
     repository: 8gears.container-registry.com/8gcr/harbor-exporter
     # -- Exporter image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
 
   # -- Number of Exporter replicas
   replicas: 1
@@ -547,6 +550,10 @@ database:
   maxIdleConns: 100
   # -- Maximum open connections
   maxOpenConns: 900
+  # -- Maximum idle time for connections (0 = no limit)
+  connMaxIdleTime: "0"
+  # -- Maximum lifetime of connections (0 = no limit)
+  connMaxLifetime: "0"
   # -- Existing secret containing database credentials
   # Must have key: POSTGRESQL_PASSWORD
   existingSecret: ""
@@ -581,6 +588,10 @@ externalRedis:
   # -- Existing secret containing Redis password
   # Must have key: REDIS_PASSWORD
   existingSecret: ""
+  # -- TLS options for external Redis
+  tlsOptions:
+    # -- Enable TLS for external Redis connection
+    enable: false
 
 # --- Trivy Scanner ---
 harbor-scanner-trivy:
@@ -597,7 +608,7 @@ harbor-scanner-trivy:
     registry: 8gears.container-registry.com
     repository: 8gcr/trivy-adapter
     # -- Trivy adapter image tag (defaults to appVersion)
-    tag: "v2.14.3"
+    tag: ""
   resources:
     requests:
       cpu: 200m
@@ -611,9 +622,10 @@ harbor-scanner-trivy:
 # ============================================================================
 
 tls:
-  enabled: true
-  # -- cert-manager integration
-  certSource: auto
+  # -- Enable TLS (set to false if terminating TLS at ingress/load balancer)
+  enabled: false
+  # -- TLS certificate source: auto, secret, or none
+  certSource: none
   certManager:
     # -- Enable cert-manager for TLS certificates
     enabled: false
@@ -638,7 +650,8 @@ tls:
 # ============================================================================
 
 metrics:
-  enabled: true
+  # -- Enable metrics endpoints on all components
+  enabled: false
   # -- Enable Prometheus ServiceMonitor
   serviceMonitor:
     # -- Create ServiceMonitor resource

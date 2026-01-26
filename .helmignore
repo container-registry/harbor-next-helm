@@ -34,3 +34,8 @@ tests/
 Taskfile.yaml
 Taskfile.yml
 .pre-commit-config.yaml
+# Migration tools
+harbor-helm-migration-tool/
+migrator-tool/
+# Examples (not part of chart)
+examples/

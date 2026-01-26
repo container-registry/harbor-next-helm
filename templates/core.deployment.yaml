@@ -49,13 +49,13 @@ spec:
             - name: CORE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "harbor.core" . }}
-                  key: secret
+                  name: {{ .Values.core.existingSecret | default (include "harbor.core" .) }}
+                  key: {{ .Values.core.existingSecretKey | default "secret" }}
             - name: JOBSERVICE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "harbor.jobservice" . }}
-                  key: JOBSERVICE_SECRET
+                  name: {{ .Values.jobservice.existingSecret | default (include "harbor.jobservice" .) }}
+                  key: {{ .Values.jobservice.existingSecretKey | default "JOBSERVICE_SECRET" }}
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:

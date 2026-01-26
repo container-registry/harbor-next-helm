@@ -254,6 +254,17 @@ Return the Redis host
 {{- else }}
 {{- .Values.externalRedis.host }}
 {{- end }}
+{{- end -}}
+
+{{/*
+Return the Redis host with port
+*/}}
+{{- define "harbor.redis.hostWithPort" -}}
+{{- if .Values.valkey.enabled }}
+{{- .Release.Name }}-valkey:6379
+{{- else }}
+{{- .Values.externalRedis.host }}:{{ .Values.externalRedis.port | default 6379 }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -355,7 +366,7 @@ Return the Redis URL for Harbor core
 {{- end -}}
 
 {{- define "harbor.redis.enableTLS" -}}
-  {{- ternary "true" "false" (and (not .Values.valkey.enabled) (.externalRedis.tlsOptions.enable)) }}
+  {{- ternary "true" "false" (and (not .Values.valkey.enabled) (and .Values.externalRedis .Values.externalRedis.tlsOptions .Values.externalRedis.tlsOptions.enable)) }}
 {{- end -}}
 
 {{/*
@@ -789,14 +800,14 @@ Trace helpers
 {{- define "harbor.trace.envs.jobservice" -}}
   {{- if .Values.trace.enabled }}
   TRACE_SERVICE_NAME: "harbor-jobservice"
-  {{ include "harbor.traceEnvs" . }}
+  {{ include "harbor.trace.envs" . }}
   {{- end }}
 {{- end -}}
 
 {{- define "harbor.trace.envs.registryctl" -}}
   {{- if .Values.trace.enabled }}
   TRACE_SERVICE_NAME: "harbor-registryctl"
-  {{ include "harbor.traceEnvs" . }}
+  {{ include "harbor.trace.envs" . }}
   {{- end }}
 {{- end -}}
 

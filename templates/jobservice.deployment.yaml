@@ -46,8 +46,15 @@ spec:
             - name: CORE_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "harbor.core" . }}
-                  key: secret
+                  name: {{ .Values.core.existingSecret | default (include "harbor.core" .) }}
+                  key: {{ .Values.core.existingSecretKey | default "secret" }}
+            {{- if .Values.valkey.auth.enabled }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "harbor.redis.secretName" . }}
+                  key: {{ include "harbor.redis.secretKey" . }}
+            {{- end }}
             {{- with .Values.jobservice.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

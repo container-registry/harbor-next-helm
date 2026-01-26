@@ -1,0 +1,2205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "core": {
+      "additionalProperties": false,
+      "description": "- Core ---",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity rules for Core pods",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": false,
+          "description": "Harbor Core application config (converted to env vars in ConfigMap)\nAny Harbor Core config can be set here without chart changes",
+          "required": [],
+          "title": "config",
+          "type": "object"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Use existing secret for Core secret",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "existingSecretKey": {
+          "default": "secret",
+          "description": "Key in existing secret containing the Core secret",
+          "required": [],
+          "title": "existingSecretKey",
+          "type": "string"
+        },
+        "extraEnv": {
+          "description": "Extra environment variables with valueFrom support",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "additionalProperties": false,
+          "description": "Core image settings",
+          "properties": {
+            "repository": {
+              "default": "goharbor/harbor-core",
+              "description": "Core image repository",
+              "required": [],
+              "title": "repository",
+              "type": "string"
+            },
+            "tag": {
+              "default": "",
+              "description": "Core image tag (defaults to appVersion)",
+              "required": [],
+              "title": "tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "repository",
+            "tag"
+          ],
+          "title": "image",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node selector for Core pods",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Additional pod annotations for Core",
+          "required": [],
+          "title": "podAnnotations",
+          "type": "object"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Additional pod labels for Core",
+          "required": [],
+          "title": "podLabels",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Pod security context for Core",
+          "properties": {
+            "fsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "fsGroup",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fsGroup"
+          ],
+          "title": "podSecurityContext",
+          "type": "object"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Number of Core replicas",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Core resource requests and limits",
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "secret": {
+          "additionalProperties": false,
+          "description": "Sensitive config for Core (converted to env vars in Secret)",
+          "required": [],
+          "title": "secret",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Core container",
+          "properties": {
+            "runAsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "default": true,
+              "required": [],
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "runAsNonRoot",
+            "runAsUser",
+            "runAsGroup"
+          ],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "additionalProperties": false,
+          "description": "Service account settings for Core",
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Service account annotations",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "create": {
+              "default": true,
+              "description": "Create a service account for Core",
+              "required": [],
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "",
+              "description": "Service account name (auto-generated if empty)",
+              "required": [],
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name",
+            "annotations"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Core pods",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "config",
+        "secret",
+        "existingSecret",
+        "existingSecretKey",
+        "extraEnv",
+        "image",
+        "replicas",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "podAnnotations",
+        "podLabels",
+        "serviceAccount",
+        "securityContext",
+        "podSecurityContext"
+      ],
+      "title": "core",
+      "type": "object"
+    },
+    "database": {
+      "additionalProperties": false,
+      "description": "- Database (EXTERNAL ONLY) ---",
+      "properties": {
+        "connMaxIdleTime": {
+          "default": "0",
+          "description": "Maximum idle time for connections (0 = no limit)",
+          "required": [],
+          "title": "connMaxIdleTime",
+          "type": "string"
+        },
+        "connMaxLifetime": {
+          "default": "0",
+          "description": "Maximum lifetime of connections (0 = no limit)",
+          "required": [],
+          "title": "connMaxLifetime",
+          "type": "string"
+        },
+        "database": {
+          "default": "registry",
+          "description": "Database name",
+          "required": [],
+          "title": "database",
+          "type": "string"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Existing secret containing database credentials\nMust have key: POSTGRESQL_PASSWORD",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "host": {
+          "default": "",
+          "description": "Database host (required)",
+          "required": [],
+          "title": "host",
+          "type": "string"
+        },
+        "maxIdleConns": {
+          "default": 100,
+          "description": "Maximum idle connections",
+          "required": [],
+          "title": "maxIdleConns",
+          "type": "integer"
+        },
+        "maxOpenConns": {
+          "default": 900,
+          "description": "Maximum open connections",
+          "required": [],
+          "title": "maxOpenConns",
+          "type": "integer"
+        },
+        "password": {
+          "default": "",
+          "description": "Database password (ignored if existingSecret is set)",
+          "required": [],
+          "title": "password",
+          "type": "string"
+        },
+        "port": {
+          "default": 5432,
+          "description": "Database port",
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        },
+        "sslmode": {
+          "default": "disable",
+          "description": "SSL mode for database connection",
+          "required": [],
+          "title": "sslmode",
+          "type": "string"
+        },
+        "username": {
+          "default": "",
+          "description": "Database username",
+          "required": [],
+          "title": "username",
+          "type": "string"
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "username",
+        "password",
+        "database",
+        "sslmode",
+        "maxIdleConns",
+        "maxOpenConns",
+        "connMaxIdleTime",
+        "connMaxLifetime",
+        "existingSecret"
+      ],
+      "title": "database",
+      "type": "object"
+    },
+    "exporter": {
+      "additionalProperties": false,
+      "description": "- Exporter ---",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity rules for Exporter pods",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": false,
+          "description": "Exporter application config (converted to env vars in ConfigMap)",
+          "required": [],
+          "title": "config",
+          "type": "object"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Enable Harbor exporter for Prometheus metrics",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "extraEnv": {
+          "description": "Extra environment variables with valueFrom support",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "additionalProperties": false,
+          "description": "Exporter image settings",
+          "properties": {
+            "repository": {
+              "default": "goharbor/harbor-exporter",
+              "description": "Exporter image repository",
+              "required": [],
+              "title": "repository",
+              "type": "string"
+            },
+            "tag": {
+              "default": "",
+              "description": "Exporter image tag (defaults to appVersion)",
+              "required": [],
+              "title": "tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "repository",
+            "tag"
+          ],
+          "title": "image",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node selector for Exporter pods",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Additional pod annotations for Exporter",
+          "required": [],
+          "title": "podAnnotations",
+          "type": "object"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Additional pod labels for Exporter",
+          "required": [],
+          "title": "podLabels",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Pod security context for Exporter",
+          "properties": {
+            "fsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "fsGroup",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fsGroup"
+          ],
+          "title": "podSecurityContext",
+          "type": "object"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Number of Exporter replicas",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Exporter resource requests and limits",
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "secret": {
+          "additionalProperties": false,
+          "description": "Sensitive config for Exporter (converted to env vars in Secret)",
+          "required": [],
+          "title": "secret",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Exporter container",
+          "properties": {
+            "runAsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "default": true,
+              "required": [],
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "runAsNonRoot",
+            "runAsUser",
+            "runAsGroup"
+          ],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "additionalProperties": false,
+          "description": "Service account settings for Exporter",
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "create": {
+              "default": true,
+              "required": [],
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "",
+              "required": [],
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name",
+            "annotations"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Exporter pods",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enabled",
+        "config",
+        "secret",
+        "extraEnv",
+        "image",
+        "replicas",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "podAnnotations",
+        "podLabels",
+        "serviceAccount",
+        "securityContext",
+        "podSecurityContext"
+      ],
+      "title": "exporter",
+      "type": "object"
+    },
+    "externalRedis": {
+      "additionalProperties": false,
+      "description": "- External Redis (when valkey.enabled=false) ---",
+      "properties": {
+        "existingSecret": {
+          "default": "",
+          "description": "Existing secret containing Redis password\nMust have key: REDIS_PASSWORD",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "host": {
+          "default": "",
+          "description": "External Redis host",
+          "required": [],
+          "title": "host",
+          "type": "string"
+        },
+        "password": {
+          "default": "",
+          "description": "External Redis password",
+          "required": [],
+          "title": "password",
+          "type": "string"
+        },
+        "port": {
+          "default": 6379,
+          "description": "External Redis port",
+          "required": [],
+          "title": "port",
+          "type": "integer"
+        },
+        "sentinelMasterSet": {
+          "default": "",
+          "description": "Sentinel master set name (for Redis Sentinel)",
+          "required": [],
+          "title": "sentinelMasterSet",
+          "type": "string"
+        },
+        "tlsOptions": {
+          "additionalProperties": false,
+          "description": "TLS options for external Redis",
+          "properties": {
+            "enable": {
+              "default": false,
+              "description": "Enable TLS for external Redis connection",
+              "required": [],
+              "title": "enable",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enable"
+          ],
+          "title": "tlsOptions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "password",
+        "sentinelMasterSet",
+        "existingSecret",
+        "tlsOptions"
+      ],
+      "title": "externalRedis",
+      "type": "object"
+    },
+    "externalURL": {
+      "default": "",
+      "description": "External URL for Harbor (REQUIRED)\nThis is the URL users will use to access Harbor (e.g., https://harbor.example.com)",
+      "required": [],
+      "title": "externalURL",
+      "type": "string"
+    },
+    "extraManifests": {
+      "description": "Extra static manifests to deploy\nThese are merged with chart labels and deployed as-is",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraManifests",
+      "type": "array"
+    },
+    "extraTemplateManifests": {
+      "description": "Extra templated manifests to deploy\nThese can use .Values, .Release, and other template functions",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraTemplateManifests",
+      "type": "array"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "description": "Override the full name",
+      "required": [],
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "gateway": {
+      "additionalProperties": false,
+      "description": "Gateway API configuration (alternative to ingress)",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Enable Gateway API HTTPRoute",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "hostnames": {
+          "description": "- name: my-gateway\n  namespace: default\nHostnames for the HTTPRoute",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "hostnames",
+          "type": "array"
+        },
+        "parentRefs": {
+          "description": "Gateway parent references",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "parentRefs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enabled",
+        "parentRefs",
+        "hostnames"
+      ],
+      "title": "gateway",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "harborAdminPassword": {
+      "default": "Harbor12345",
+      "description": "Harbor admin password (initial setup)",
+      "required": [],
+      "title": "harborAdminPassword",
+      "type": "string"
+    },
+    "image": {
+      "additionalProperties": false,
+      "description": "Global image settings",
+      "properties": {
+        "pullPolicy": {
+          "default": "IfNotPresent",
+          "description": "Image pull policy for all Harbor components",
+          "required": [],
+          "title": "pullPolicy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pullPolicy"
+      ],
+      "title": "image",
+      "type": "object"
+    },
+    "imageCredentials": {
+      "additionalProperties": false,
+      "description": "============================================================================\n1. GLOBAL SETTINGS\n============================================================================\nCredentials to pull images\nimageCredentials:\n  registry: xyz.com\n  username: xxx\n  password: yyy\n  email: zzz",
+      "required": [],
+      "title": "imageCredentials",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "description": "List of image pull secrets",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "imagePullSecrets",
+      "type": "array"
+    },
+    "ingress": {
+      "additionalProperties": false,
+      "description": "Ingress configuration",
+      "properties": {
+        "annotations": {
+          "additionalProperties": false,
+          "description": "Ingress annotations",
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "className": {
+          "default": "",
+          "description": "Ingress class name",
+          "required": [],
+          "title": "className",
+          "type": "string"
+        },
+        "core": {
+          "default": "",
+          "description": "nginx.ingress.kubernetes.io/proxy-body-size: \"0\"\nnginx.ingress.kubernetes.io/ssl-redirect: \"true\"\nHarbor core hostname (REQUIRED when ingress enabled)",
+          "required": [],
+          "title": "core",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Enable ingress",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "hosts": {
+          "description": "Additional ingress hosts",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "hosts",
+          "type": "array"
+        },
+        "tls": {
+          "description": "- host: harbor.example.com\n  paths:\n    - path: /\n      pathType: Prefix\nIngress TLS configuration",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tls",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enabled",
+        "className",
+        "annotations",
+        "core",
+        "hosts",
+        "tls"
+      ],
+      "title": "ingress",
+      "type": "object"
+    },
+    "ipFamily": {
+      "additionalProperties": false,
+      "properties": {
+        "ipv4": {
+          "additionalProperties": false,
+          "description": "ipv4Enabled set to true if ipv4 is enabled in cluster, currently it affected the nginx related component",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "ipv4",
+          "type": "object"
+        },
+        "ipv6": {
+          "additionalProperties": false,
+          "description": "ipv6Enabled set to true if ipv6 is enabled in cluster, currently it affected the nginx related component",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "ipv6",
+          "type": "object"
+        }
+      },
+      "required": [
+        "ipv6",
+        "ipv4"
+      ],
+      "title": "ipFamily",
+      "type": "object"
+    },
+    "jobservice": {
+      "additionalProperties": false,
+      "description": "- Jobservice ---",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity rules for Jobservice pods",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": false,
+          "description": "Jobservice application config (converted to env vars in ConfigMap)",
+          "required": [],
+          "title": "config",
+          "type": "object"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Use existing secret for Jobservice secret",
+          "required": [],
+          "title": "existingSecret",
+          "type": "string"
+        },
+        "existingSecretKey": {
+          "default": "JOBSERVICE_SECRET",
+          "description": "Key in existing secret containing the Jobservice secret",
+          "required": [],
+          "title": "existingSecretKey",
+          "type": "string"
+        },
+        "extraEnv": {
+          "description": "Extra environment variables with valueFrom support",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "additionalProperties": false,
+          "description": "Jobservice image settings",
+          "properties": {
+            "repository": {
+              "default": "goharbor/harbor-jobservice",
+              "description": "Jobservice image repository",
+              "required": [],
+              "title": "repository",
+              "type": "string"
+            },
+            "tag": {
+              "default": "",
+              "description": "Jobservice image tag (defaults to appVersion)",
+              "required": [],
+              "title": "tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "repository",
+            "tag"
+          ],
+          "title": "image",
+          "type": "object"
+        },
+        "max_job_workers": {
+          "default": 4,
+          "required": [],
+          "title": "max_job_workers",
+          "type": "integer"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node selector for Jobservice pods",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Additional pod annotations for Jobservice",
+          "required": [],
+          "title": "podAnnotations",
+          "type": "object"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Additional pod labels for Jobservice",
+          "required": [],
+          "title": "podLabels",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Pod security context for Jobservice",
+          "properties": {
+            "fsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "fsGroup",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fsGroup"
+          ],
+          "title": "podSecurityContext",
+          "type": "object"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Number of Jobservice replicas",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Jobservice resource requests and limits",
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "secret": {
+          "additionalProperties": false,
+          "description": "Sensitive config for Jobservice (converted to env vars in Secret)",
+          "required": [],
+          "title": "secret",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Jobservice container",
+          "properties": {
+            "runAsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "default": true,
+              "required": [],
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "runAsNonRoot",
+            "runAsUser",
+            "runAsGroup"
+          ],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "additionalProperties": false,
+          "description": "Service account settings for Jobservice",
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "create": {
+              "default": true,
+              "required": [],
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "",
+              "required": [],
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name",
+            "annotations"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Jobservice pods",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "config",
+        "max_job_workers",
+        "secret",
+        "existingSecret",
+        "existingSecretKey",
+        "extraEnv",
+        "image",
+        "replicas",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "podAnnotations",
+        "podLabels",
+        "serviceAccount",
+        "securityContext",
+        "podSecurityContext"
+      ],
+      "title": "jobservice",
+      "type": "object"
+    },
+    "logLevel": {
+      "default": "info",
+      "description": "Log level for all components (debug, info, warning, error, fatal)",
+      "required": [],
+      "title": "logLevel",
+      "type": "string"
+    },
+    "metrics": {
+      "additionalProperties": false,
+      "description": "============================================================================\n6. MONITORING\n============================================================================",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Enable metrics endpoints on all components",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "serviceMonitor": {
+          "additionalProperties": false,
+          "description": "Enable Prometheus ServiceMonitor",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Create ServiceMonitor resource",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "honorLabels": {
+              "default": true,
+              "description": "Honor labels",
+              "required": [],
+              "title": "honorLabels",
+              "type": "boolean"
+            },
+            "interval": {
+              "default": "30s",
+              "description": "Scrape interval",
+              "required": [],
+              "title": "interval",
+              "type": "string"
+            },
+            "labels": {
+              "additionalProperties": false,
+              "description": "Additional labels for ServiceMonitor",
+              "required": [],
+              "title": "labels",
+              "type": "object"
+            },
+            "namespace": {
+              "default": "",
+              "description": "ServiceMonitor namespace (defaults to release namespace)",
+              "required": [],
+              "title": "namespace",
+              "type": "string"
+            },
+            "scrapeTimeout": {
+              "default": "10s",
+              "description": "Scrape timeout",
+              "required": [],
+              "title": "scrapeTimeout",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "namespace",
+            "labels",
+            "interval",
+            "scrapeTimeout",
+            "honorLabels"
+          ],
+          "title": "serviceMonitor",
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled",
+        "serviceMonitor"
+      ],
+      "title": "metrics",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "Override the chart name",
+      "required": [],
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "portal": {
+      "additionalProperties": false,
+      "description": "- Portal ---",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity rules for Portal pods",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": false,
+          "description": "Portal application config (converted to env vars in ConfigMap)",
+          "required": [],
+          "title": "config",
+          "type": "object"
+        },
+        "extraEnv": {
+          "description": "Extra environment variables with valueFrom support",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "additionalProperties": false,
+          "description": "Portal image settings",
+          "properties": {
+            "repository": {
+              "default": "goharbor/harbor-portal",
+              "description": "Portal image repository",
+              "required": [],
+              "title": "repository",
+              "type": "string"
+            },
+            "tag": {
+              "default": "",
+              "description": "Portal image tag (defaults to appVersion)",
+              "required": [],
+              "title": "tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "repository",
+            "tag"
+          ],
+          "title": "image",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node selector for Portal pods",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Additional pod annotations for Portal",
+          "required": [],
+          "title": "podAnnotations",
+          "type": "object"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Additional pod labels for Portal",
+          "required": [],
+          "title": "podLabels",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Pod security context for Portal",
+          "properties": {
+            "fsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "fsGroup",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fsGroup"
+          ],
+          "title": "podSecurityContext",
+          "type": "object"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Number of Portal replicas",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Portal resource requests and limits",
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "secret": {
+          "additionalProperties": false,
+          "description": "Sensitive config for Portal (converted to env vars in Secret)",
+          "required": [],
+          "title": "secret",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Portal container",
+          "properties": {
+            "runAsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "default": true,
+              "required": [],
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "runAsNonRoot",
+            "runAsUser",
+            "runAsGroup"
+          ],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "additionalProperties": false,
+          "description": "Service account settings for Portal",
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "create": {
+              "default": true,
+              "required": [],
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "",
+              "required": [],
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name",
+            "annotations"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Portal pods",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "config",
+        "secret",
+        "extraEnv",
+        "image",
+        "replicas",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "podAnnotations",
+        "podLabels",
+        "serviceAccount",
+        "securityContext",
+        "podSecurityContext"
+      ],
+      "title": "portal",
+      "type": "object"
+    },
+    "proxy": {
+      "additionalProperties": false,
+      "description": "The proxy settings for updating trivy vulnerabilities from the Internet and replicating\nartifacts from/to the registries that cannot be reached directly",
+      "properties": {
+        "components": {
+          "items": {
+            "anyOf": [
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "components",
+          "type": "array"
+        },
+        "httpProxy": {
+          "default": "",
+          "required": [],
+          "title": "httpProxy",
+          "type": "null"
+        },
+        "httpsProxy": {
+          "default": "",
+          "required": [],
+          "title": "httpsProxy",
+          "type": "null"
+        },
+        "noProxy": {
+          "default": "127.0.0.1,localhost,.local,.internal",
+          "required": [],
+          "title": "noProxy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "httpProxy",
+        "httpsProxy",
+        "noProxy",
+        "components"
+      ],
+      "title": "proxy",
+      "type": "object"
+    },
+    "registry": {
+      "additionalProperties": false,
+      "description": "- Registry ---",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity rules for Registry pods",
+          "required": [],
+          "title": "affinity",
+          "type": "object"
+        },
+        "config": {
+          "additionalProperties": false,
+          "required": [],
+          "title": "config",
+          "type": "object"
+        },
+        "controller": {
+          "additionalProperties": false,
+          "description": "Registryctl image settings",
+          "properties": {
+            "image": {
+              "additionalProperties": false,
+              "properties": {
+                "repository": {
+                  "default": "goharbor/harbor-registryctl",
+                  "description": "Registryctl image repository",
+                  "required": [],
+                  "title": "repository",
+                  "type": "string"
+                },
+                "tag": {
+                  "default": "",
+                  "description": "Registryctl image tag (defaults to appVersion)",
+                  "required": [],
+                  "title": "tag",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "repository",
+                "tag"
+              ],
+              "title": "image",
+              "type": "object"
+            }
+          },
+          "required": [
+            "image"
+          ],
+          "title": "controller",
+          "type": "object"
+        },
+        "credentials": {
+          "additionalProperties": false,
+          "properties": {
+            "existingSecret": {
+              "default": "",
+              "required": [],
+              "title": "existingSecret",
+              "type": "string"
+            },
+            "htpasswdString": {
+              "default": "",
+              "required": [],
+              "title": "htpasswdString",
+              "type": "string"
+            },
+            "password": {
+              "default": "",
+              "required": [],
+              "title": "password",
+              "type": "string"
+            },
+            "username": {
+              "default": "harbor_registry_user",
+              "required": [],
+              "title": "username",
+              "type": "string"
+            }
+          },
+          "required": [
+            "username",
+            "password",
+            "existingSecret",
+            "htpasswdString"
+          ],
+          "title": "credentials",
+          "type": "object"
+        },
+        "extraEnv": {
+          "description": "Extra environment variables with valueFrom support",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnv",
+          "type": "array"
+        },
+        "image": {
+          "additionalProperties": false,
+          "description": "Registry image settings",
+          "properties": {
+            "repository": {
+              "default": "goharbor/registry-photon",
+              "description": "Registry image repository",
+              "required": [],
+              "title": "repository",
+              "type": "string"
+            },
+            "tag": {
+              "default": "",
+              "description": "Registry image tag (defaults to appVersion)",
+              "required": [],
+              "title": "tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "repository",
+            "tag"
+          ],
+          "title": "image",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node selector for Registry pods",
+          "required": [],
+          "title": "nodeSelector",
+          "type": "object"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "description": "Registry persistence settings",
+          "properties": {
+            "accessModes": {
+              "description": "PVC access modes",
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "accessModes",
+              "type": "array"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Annotations for PVC",
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "enabled": {
+              "default": true,
+              "description": "Enable persistence for registry",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Existing PVC name (disables dynamic provisioning)",
+              "required": [],
+              "title": "existingClaim",
+              "type": "string"
+            },
+            "size": {
+              "default": "50Gi",
+              "description": "PVC size",
+              "required": [],
+              "title": "size",
+              "type": "string"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for PVC",
+              "required": [],
+              "title": "storageClass",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "storageClass",
+            "accessModes",
+            "size",
+            "existingClaim",
+            "annotations"
+          ],
+          "title": "persistence",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Additional pod annotations for Registry",
+          "required": [],
+          "title": "podAnnotations",
+          "type": "object"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Additional pod labels for Registry",
+          "required": [],
+          "title": "podLabels",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Pod security context for Registry",
+          "properties": {
+            "fsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "fsGroup",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fsGroup"
+          ],
+          "title": "podSecurityContext",
+          "type": "object"
+        },
+        "relativeurls": {
+          "default": false,
+          "description": "If true, the registry returns relative URLs in Location headers",
+          "required": [],
+          "title": "relativeurls",
+          "type": "boolean"
+        },
+        "replicas": {
+          "default": 1,
+          "description": "Number of Registry replicas",
+          "required": [],
+          "title": "replicas",
+          "type": "integer"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Registry resource requests and limits",
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "secret": {
+          "additionalProperties": false,
+          "description": "Sensitive config for Registry (converted to env vars in Secret)",
+          "required": [],
+          "title": "secret",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Registry container",
+          "properties": {
+            "runAsGroup": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsGroup",
+              "type": "integer"
+            },
+            "runAsNonRoot": {
+              "default": true,
+              "required": [],
+              "title": "runAsNonRoot",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 10000,
+              "required": [],
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "runAsNonRoot",
+            "runAsUser",
+            "runAsGroup"
+          ],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "serviceAccount": {
+          "additionalProperties": false,
+          "description": "Service account settings for Registry",
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "required": [],
+              "title": "annotations",
+              "type": "object"
+            },
+            "create": {
+              "default": true,
+              "required": [],
+              "title": "create",
+              "type": "boolean"
+            },
+            "name": {
+              "default": "",
+              "required": [],
+              "title": "name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "create",
+            "name",
+            "annotations"
+          ],
+          "title": "serviceAccount",
+          "type": "object"
+        },
+        "storage": {
+          "additionalProperties": false,
+          "description": "Registry storage configuration",
+          "properties": {
+            "azure": {
+              "additionalProperties": false,
+              "description": "region: us-east-1\nbucket: my-harbor-bucket\naccesskey: \"\"\nsecretkey: \"\"\nregionendpoint: \"\"\nencrypt: false\nsecure: true\nv4auth: true\nchunksize: 5242880\nrootdirectory: \"\"\nAzure Blob storage settings",
+              "required": [],
+              "title": "azure",
+              "type": "object"
+            },
+            "disableredirect": {
+              "default": false,
+              "required": [],
+              "title": "disableredirect",
+              "type": "boolean"
+            },
+            "filesystem": {
+              "additionalProperties": false,
+              "description": "Filesystem storage settings",
+              "properties": {
+                "rootdirectory": {
+                  "default": "/storage",
+                  "required": [],
+                  "title": "rootdirectory",
+                  "type": "string"
+                },
+                "subPath": {
+                  "default": "",
+                  "required": [],
+                  "title": "subPath",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "rootdirectory",
+                "subPath"
+              ],
+              "title": "filesystem",
+              "type": "object"
+            },
+            "gcs": {
+              "additionalProperties": false,
+              "description": "accountname: \"\"\naccountkey: \"\"\ncontainer: \"\"\nrealm: core.windows.net\nGoogle Cloud Storage settings",
+              "required": [],
+              "title": "gcs",
+              "type": "object"
+            },
+            "oss": {
+              "additionalProperties": false,
+              "description": "bucket: \"\"\nkeyfile: \"\"\nrootdirectory: \"\"\nchunksize: 5242880\nAlibaba Cloud OSS settings",
+              "required": [],
+              "title": "oss",
+              "type": "object"
+            },
+            "s3": {
+              "additionalProperties": false,
+              "description": "S3 storage settings",
+              "required": [],
+              "title": "s3",
+              "type": "object"
+            },
+            "type": {
+              "default": "filesystem",
+              "description": "Storage type: filesystem, s3, azure, gcs, oss",
+              "required": [],
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "disableredirect",
+            "type",
+            "filesystem",
+            "s3",
+            "azure",
+            "gcs",
+            "oss"
+          ],
+          "title": "storage",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Registry pods",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations",
+          "type": "array"
+        },
+        "upload_purging": {
+          "additionalProperties": false,
+          "description": "Registry application config (converted to env vars in ConfigMap)",
+          "properties": {
+            "age": {
+              "default": "168h",
+              "required": [],
+              "title": "age",
+              "type": "string"
+            },
+            "dryrun": {
+              "default": false,
+              "required": [],
+              "title": "dryrun",
+              "type": "boolean"
+            },
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "interval": {
+              "default": "24h",
+              "required": [],
+              "title": "interval",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "age",
+            "interval",
+            "dryrun"
+          ],
+          "title": "upload_purging",
+          "type": "object"
+        }
+      },
+      "required": [
+        "relativeurls",
+        "upload_purging",
+        "config",
+        "persistence",
+        "credentials",
+        "storage",
+        "secret",
+        "extraEnv",
+        "image",
+        "controller",
+        "replicas",
+        "resources",
+        "nodeSelector",
+        "tolerations",
+        "affinity",
+        "podAnnotations",
+        "podLabels",
+        "serviceAccount",
+        "securityContext",
+        "podSecurityContext"
+      ],
+      "title": "registry",
+      "type": "object"
+    },
+    "secretKey": {
+      "default": "",
+      "description": "Secret key for encryption (16 characters)\nUsed for encrypting credentials stored in the database",
+      "required": [],
+      "title": "secretKey",
+      "type": "string"
+    },
+    "tls": {
+      "additionalProperties": false,
+      "description": "============================================================================\n5. TLS CONFIGURATION\n============================================================================",
+      "properties": {
+        "certManager": {
+          "additionalProperties": false,
+          "properties": {
+            "duration": {
+              "default": "2160h",
+              "description": "name: letsencrypt-prod\nkind: ClusterIssuer\nCertificate duration",
+              "required": [],
+              "title": "duration",
+              "type": "string"
+            },
+            "enabled": {
+              "default": false,
+              "description": "Enable cert-manager for TLS certificates",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "issuerRef": {
+              "additionalProperties": false,
+              "description": "cert-manager issuer reference",
+              "required": [],
+              "title": "issuerRef",
+              "type": "object"
+            },
+            "renewBefore": {
+              "default": "360h",
+              "description": "Certificate renewal before expiry",
+              "required": [],
+              "title": "renewBefore",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "issuerRef",
+            "duration",
+            "renewBefore"
+          ],
+          "title": "certManager",
+          "type": "object"
+        },
+        "certSource": {
+          "default": "none",
+          "description": "TLS certificate source: auto, secret, or none",
+          "required": [],
+          "title": "certSource",
+          "type": "string"
+        },
+        "customSecrets": {
+          "additionalProperties": false,
+          "description": "Custom TLS secrets (alternative to cert-manager)",
+          "properties": {
+            "core": {
+              "default": "",
+              "description": "TLS secret for core/portal",
+              "required": [],
+              "title": "core",
+              "type": "string"
+            },
+            "registry": {
+              "default": "",
+              "description": "TLS secret for registry",
+              "required": [],
+              "title": "registry",
+              "type": "string"
+            }
+          },
+          "required": [
+            "core",
+            "registry"
+          ],
+          "title": "customSecrets",
+          "type": "object"
+        },
+        "enabled": {
+          "default": false,
+          "description": "Enable TLS (set to false if terminating TLS at ingress/load balancer)",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "certSource",
+        "certManager",
+        "customSecrets"
+      ],
+      "title": "tls",
+      "type": "object"
+    },
+    "trace": {
+      "additionalProperties": false,
+      "description": "============================================================================\n8. Tracing\n============================================================================",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "jaeger": {
+          "additionalProperties": false,
+          "description": "namespace used to differentiate different harbor services\nnamespace:\nattributes is a key value dict contains user defined attributes used to initialize trace provider\nattributes:\n  application: harbor",
+          "properties": {
+            "endpoint": {
+              "default": "http://hostname:14268/api/traces",
+              "description": "jaeger supports two modes:\n  collector mode(uncomment endpoint and uncomment username, password if needed)\n  agent mode(uncomment agent_host and agent_port)",
+              "required": [],
+              "title": "endpoint",
+              "type": "string"
+            }
+          },
+          "required": [
+            "endpoint"
+          ],
+          "title": "jaeger",
+          "type": "object"
+        },
+        "otel": {
+          "additionalProperties": false,
+          "properties": {
+            "compression": {
+              "default": false,
+              "required": [],
+              "title": "compression",
+              "type": "boolean"
+            },
+            "endpoint": {
+              "default": "hostname:4318",
+              "required": [],
+              "title": "endpoint",
+              "type": "string"
+            },
+            "insecure": {
+              "default": true,
+              "required": [],
+              "title": "insecure",
+              "type": "boolean"
+            },
+            "timeout": {
+              "default": 10,
+              "description": "timeout is in seconds",
+              "required": [],
+              "title": "timeout",
+              "type": "integer"
+            },
+            "url_path": {
+              "default": "/v1/traces",
+              "required": [],
+              "title": "url_path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "endpoint",
+            "url_path",
+            "compression",
+            "insecure",
+            "timeout"
+          ],
+          "title": "otel",
+          "type": "object"
+        },
+        "provider": {
+          "default": "jaeger",
+          "description": "trace provider: jaeger or otel\njaeger should be 1.26+",
+          "required": [],
+          "title": "provider",
+          "type": "string"
+        },
+        "sample_rate": {
+          "default": 1,
+          "description": "set sample_rate to 1 if you wanna sampling 100% of trace data; set 0.5 if you wanna sampling 50% of trace data, and so forth",
+          "required": [],
+          "title": "sample_rate",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "enabled",
+        "provider",
+        "sample_rate",
+        "jaeger",
+        "otel"
+      ],
+      "title": "trace",
+      "type": "object"
+    },
+    "trivy": {
+      "additionalProperties": false,
+      "description": "- Trivy Scanner ---",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Enable Trivy scanner subchart",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "trivy",
+      "type": "object"
+    },
+    "valkey": {
+      "additionalProperties": false,
+      "description": "- Valkey (Redis-compatible) ---",
+      "properties": {
+        "architecture": {
+          "default": "standalone",
+          "description": "Valkey architecture: standalone or replication",
+          "required": [],
+          "title": "architecture",
+          "type": "string"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "description": "Valkey authentication settings",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "password": {
+              "default": "",
+              "required": [],
+              "title": "password",
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "password"
+          ],
+          "title": "auth",
+          "type": "object"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Enable Valkey subchart",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "master": {
+          "additionalProperties": false,
+          "description": "Valkey master configuration",
+          "properties": {
+            "persistence": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "required": [],
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "enabled"
+              ],
+              "title": "persistence",
+              "type": "object"
+            }
+          },
+          "required": [
+            "persistence"
+          ],
+          "title": "master",
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled",
+        "architecture",
+        "auth",
+        "master"
+      ],
+      "title": "valkey",
+      "type": "object"
+    }
+  },
+  "required": [
+    "imageCredentials",
+    "image",
+    "imagePullSecrets",
+    "nameOverride",
+    "fullnameOverride",
+    "externalURL",
+    "logLevel",
+    "harborAdminPassword",
+    "secretKey",
+    "proxy",
+    "ingress",
+    "gateway",
+    "ipFamily",
+    "core",
+    "registry",
+    "portal",
+    "jobservice",
+    "exporter",
+    "database",
+    "valkey",
+    "externalRedis",
+    "trivy",
+    "tls",
+    "metrics",
+    "extraManifests",
+    "extraTemplateManifests",
+    "trace"
+  ],
+  "type": "object"
+}
