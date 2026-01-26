@@ -127,53 +127,11 @@ test-1-harbor-scanner-trivy-0               1/1     Running   0             61s
 test-1-valkey-59486f6977-nqb2z              1/1     Running   0             61s
 ```
 
-## Access Harbor from an Nginx ingress
-
-We will use an Nginx ingress to forward traffic to our host computer. Let us install it with Helm:
-
-```bash
-helm upgrade --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
-    --namespace ingress-nginx --create-namespace
-```
-
-Given the ingress is created:
-
-```bash
-kubectl get ingress -A
-NAMESPACE               NAME            CLASS    HOSTS                ADDRESS   PORTS     AGE
-my-container-registry   test-1-harbor   <none>   harbor.example.com             80, 443   21m
-```
-
-And endpoints are created as well:
-
-```bash
-kubectl get endpoints -n my-container-registry
-Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
-NAME                          ENDPOINTS                         AGE
-test-1-harbor-core            10.42.0.38:8080,10.42.0.38:8001   22m
-test-1-harbor-exporter        10.42.0.39:8001                   22m
-test-1-harbor-jobservice      10.42.0.40:8080,10.42.0.40:8001   22m
-test-1-harbor-portal          10.42.0.41:8080                   22m
-test-1-harbor-registry        <none>                            22m
-test-1-harbor-scanner-trivy   <none>                            22m
-test-1-valkey                 10.42.0.34:6379                   22m
-```
-
-We should now be able to access our deployment by forwarding the ingress port:
+Since RKE2 comes with an Nginx ingress deployed by default, we can access the
+portal from a browser at:
 
 ```
-kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 4443:443
-Forwarding from 127.0.0.1:4443 -> 443
-Forwarding from [::1]:4443 -> 443
-Handling connection for 4443
-```
-
-
-We can access the portal from the browser at
-
-```
-https://harbor.example.com:4443
+https://harbor.example.com
 ```
 
 The default credentials are `admin` and `Harbor12345`.
