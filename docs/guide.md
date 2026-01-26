@@ -4,7 +4,7 @@
 
 Rancher manager >= 2.13.1
 
-RKE2 >= rke2 version v1.34.3+rke2r1 (1b103f296ab20fac6b32951c9efe59d28a5ed79f)
+RKE2 >= v1.34.3+rke2r1 (1b103f296ab20fac6b32951c9efe59d28a5ed79f)
 
 ## Deploy a database
 
