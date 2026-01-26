@@ -454,7 +454,7 @@ http://{{ include "harbor.fullname" . }}-registry:8080
 Return the Trivy adapter URL (if enabled)
 */}}
 {{- define "harbor.trivy.url" -}}
-http://trivy:8080
+http://{{ include "harbor.fullname" . }}-trivy:8080
 {{- end }}
 
 {{- define "harbor.trivy.enabled" -}}
