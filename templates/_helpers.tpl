@@ -458,7 +458,7 @@ http://trivy:8080
 {{- end }}
 
 {{- define "harbor.trivy.enabled" -}}
-{{ index .Values "harbor-scanner-trivy" "enabled" }}
+{{ .Values.trivy.enabled }}
 {{- end }}
 
 {{/*

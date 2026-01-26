@@ -225,11 +225,6 @@ registry:
     interval: 24h
     dryrun: false
   config: {}
-  persistence:
-    enabled: true
-    persistentVolumeClaim:
-      registry:
-        existingClaim: ""
   credentials:
     username: "harbor_registry_user"
     password: ""
@@ -693,21 +688,17 @@ externalRedis:
     enable: false
 
 # --- Trivy Scanner ---
-harbor-scanner-trivy:
-  # -- Enable Trivy scanner subchart
-  enabled: true
-  fullnameOverride: "trivy"
-  scanner:
-    trivy:
-      gitHubToken: ""
-    redis:
-      poolURL: redis://valkey:6379
-
+trivy:
+  # -- Enable Trivy scanner
+  enabled: false
   image:
-    registry: 8gears.container-registry.com
-    repository: 8gcr/trivy-adapter
+    # -- Trivy adapter image repository
+    repository: goharbor/trivy-adapter-photon
     # -- Trivy adapter image tag (defaults to appVersion)
     tag: ""
+  # -- Number of Trivy replicas
+  replicas: 1
+  # -- Trivy resource requests and limits
   resources:
     requests:
       cpu: 200m
@@ -715,6 +706,40 @@ harbor-scanner-trivy:
     limits:
       cpu: 1
       memory: 1Gi
+  # -- Debug mode for more verbose scanning log
+  debugMode: false
+  # -- Vulnerability types to scan (os,library)
+  vulnType: "os,library"
+  # -- Severity levels to check
+  severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+  # -- Skip unfixed vulnerabilities
+  ignoreUnfixed: false
+  # -- Skip verifying registry certificate
+  insecure: false
+  # -- GitHub token to download Trivy DB (optional)
+  gitHubToken: ""
+  # -- Skip Trivy DB updates
+  skipUpdate: false
+  # -- Timeout for scanning
+  timeout: "5m0s"
+  # -- Node selector for Trivy pods
+  nodeSelector: {}
+  # -- Tolerations for Trivy pods
+  tolerations: []
+  # -- Affinity rules for Trivy pods
+  affinity: {}
+  # -- Additional pod annotations for Trivy
+  podAnnotations: {}
+  # -- Additional pod labels for Trivy
+  podLabels: {}
+  # -- Security context for Trivy container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10000
+    runAsGroup: 10000
+  # -- Pod security context for Trivy
+  podSecurityContext:
+    fsGroup: 10000
 
 # ============================================================================
 # 5. TLS CONFIGURATION
