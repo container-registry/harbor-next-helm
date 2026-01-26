@@ -33,7 +33,7 @@ spec:
           image: {{ include "harbor.image" (dict "imageRoot" .Values.exporter.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
           ports:
-            - name: metrics
+            - name: {{ include "harbor.metrics.portName" . | quote }}
               containerPort: 8001
               protocol: TCP
           env:
@@ -75,7 +75,7 @@ spec:
             - name: HARBOR_DATABASE_MAX_OPEN_CONNS
               value: {{ .Values.database.maxOpenConns | default 900 | quote }}
             - name: HARBOR_REDIS_URL
-              value: {{ include "harbor.redis.url" . | quote }}
+              value: {{ include "harbor.redis.url.jobservice" . | quote }}
             - name: HARBOR_REDIS_NAMESPACE
               value: "harbor_job_service_namespace"
             - name: HARBOR_REDIS_TIMEOUT
@@ -93,13 +93,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /metrics
-              port: metrics
+              port: {{ include "harbor.metrics.portName" . | quote }}
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /metrics
-              port: metrics
+              port: {{ include "harbor.metrics.portName" . | quote }}
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:

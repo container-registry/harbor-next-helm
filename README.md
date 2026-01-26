@@ -1,6 +1,6 @@
 # Harbor Helm Chart (Next Generation)
 
-![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.12.0](https://img.shields.io/badge/AppVersion-2.12.0-informational?style=flat-square)
+![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.14.1](https://img.shields.io/badge/AppVersion-v2.14.1-informational?style=flat-square)
 
 A modern, production-ready Helm chart for [Harbor](https://goharbor.io/) - the cloud native registry for Kubernetes.
 
@@ -159,7 +159,7 @@ helm uninstall my-harbor --namespace harbor
 
 | Repository | Name | Version |
 |------------|------|---------|
-| oci://registry-1.docker.io/bitnamicharts | valkey | 2.x.x |
+| https://valkey.io/valkey-helm/ | valkey | 0.9.x |
 | https://aquasecurity.github.io/helm-charts/ | harbor-scanner-trivy | 0.x.x |
 
 ## Configuration

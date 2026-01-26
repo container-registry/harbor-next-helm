@@ -20,7 +20,7 @@ spec:
       - {{ .Release.Namespace }}
   endpoints:
     # Core metrics
-    - port: metrics
+    - port: {{ include "harbor.metrics.portName" . | quote }}
       path: /metrics
       interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
@@ -30,7 +30,7 @@ spec:
           targetLabel: component
     {{- if .Values.exporter.enabled }}
     # Exporter metrics
-    - port: metrics
+    - port: {{ include "harbor.metrics.portName" . | quote }}
       path: /metrics
       interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}

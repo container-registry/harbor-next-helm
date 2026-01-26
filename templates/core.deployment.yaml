@@ -34,10 +34,10 @@ spec:
           image: {{ include "harbor.image" (dict "imageRoot" .Values.core.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ include "harbor.imagePullPolicy" . }}
           ports:
-            - name: http
+            - name: core-http
               containerPort: 8080
               protocol: TCP
-            - name: metrics
+            - name: {{ include "harbor.metrics.portName" . | quote }}
               containerPort: 8001
               protocol: TCP
           envFrom:
@@ -46,6 +46,16 @@ spec:
             - secretRef:
                 name: {{ include "harbor.fullname" . }}-core
           env:
+            - name: CORE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.core.existingSecret | default (include "harbor.core" .) }}
+                  key: {{ .Values.core.existingSecretKey | default "secret" }}
+            - name: JOBSERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.jobservice.existingSecret | default (include "harbor.jobservice" .) }}
+                  key: {{ .Values.jobservice.existingSecretKey | default "JOBSERVICE_SECRET" }}
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -64,13 +74,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /api/v2.0/ping
-              port: http
+              port: core-http
             initialDelaySeconds: 20
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /api/v2.0/ping
-              port: http
+              port: core-http
             initialDelaySeconds: 20
             periodSeconds: 10
           resources:
@@ -79,6 +89,12 @@ spec:
             - name: config
               mountPath: /etc/core/app.conf
               subPath: app.conf
+            - name: secret-key
+              mountPath: /etc/core/key
+              subPath: key
+            - name: token-service-private-key
+              mountPath: /etc/core/private_key.pem
+              subPath: tls.key
             - name: psc
               mountPath: /etc/core/token
             - name: tmp
@@ -91,6 +107,19 @@ spec:
               - key: app.conf
                 path: app.conf
             optional: true
+        - name: secret-key
+          secret:
+            secretName: {{ include "harbor.core" . }}
+            items:
+              - key: secretKey
+                path: key
+        - name: token-service-private-key
+          secret:
+            {{- if .Values.core.secretName }}
+            secretName: {{ .Values.core.secretName }}
+            {{- else }}
+            secretName: {{ template "harbor.core" . }}
+            {{- end }}
         - name: psc
           emptyDir: {}
         - name: tmp

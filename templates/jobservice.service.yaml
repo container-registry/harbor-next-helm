@@ -7,9 +7,13 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: http
+    - name: http-jobservice
       port: 80
-      targetPort: http
+      targetPort: {{ include "harbor.jobservice.port" . }}
       protocol: TCP
+    - name: {{ include "harbor.metrics.portName" . | quote }}
+      port: {{ include "harbor.metrics.port" . }}
+      protocol: TCP
+      targetPort: {{ include "harbor.metrics.port" . }}
   selector:
     {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "jobservice") | nindent 4 }}

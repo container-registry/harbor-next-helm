@@ -1,11 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "harbor.fullname" . }}-registry
+  name: {{ include "harbor.registry.name" . }}
   labels:
     {{- include "harbor.componentLabels" (dict "root" . "component" "registry") | nindent 4 }}
 spec:
   replicas: {{ .Values.registry.replicas }}
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       {{- include "harbor.componentSelectorLabels" (dict "root" . "component" "registry") | nindent 6 }}
@@ -41,31 +44,32 @@ spec:
               containerPort: 5001
               protocol: TCP
           envFrom:
-            - configMapRef:
-                name: {{ include "harbor.fullname" . }}-registry
             - secretRef:
-                name: {{ include "harbor.fullname" . }}-registry
+                name: {{ include "harbor.registry.name" . }}
           env:
+            - name: REGISTRY_HTTP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "harbor.registry.name" . }}
+                  key: REGISTRY_HTTP_SECRET
             {{- with .Values.registry.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: 5000
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: 5000
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
-            - name: tmp
-              mountPath: /tmp
             {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
@@ -75,6 +79,12 @@ spec:
               mountPath: /etc/registry/gcs
               readOnly: true
             {{- end }}
+            - mountPath: /etc/registry/passwd
+              name: registry-htpasswd
+              subPath: passwd
+            - mountPath: /etc/registry/config.yml
+              name: registry-config
+              subPath: config.yml
         - name: registryctl
           securityContext:
             {{- toYaml .Values.registry.securityContext | nindent 12 }}
@@ -86,37 +96,77 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "harbor.fullname" . }}-registry
+                name: {{ include "harbor.registry.name" . }}
             - secretRef:
-                name: {{ include "harbor.fullname" . }}-registry
+                name: {{ include "harbor.registry.name" . }}
           env:
+            {{- if .Values.registry.existingSecret }}
+            - name: REGISTRY_HTTP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.registry.existingSecret }}
+                  key: {{ .Values.registry.existingSecretKey }}
+            {{- end }}
+            - name: CORE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (include "harbor.core" .) .Values.core.existingSecret }}
+                  key: secret
+            - name: JOBSERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (include "harbor.jobservice" .) .Values.jobservice.existingSecret }}
+                  {{- if .Values.jobservice.existingSecret }}
+                  key: {{ .Values.jobservice.existingSecretKey }}
+                  {{- else }}
+                  key: JOBSERVICE_SECRET
+                  {{- end }}
+            {{- if has "registry" .Values.proxy.components }}
+            - name: HTTP_PROXY
+              value: "{{ .Values.proxy.httpProxy }}"
+            - name: HTTPS_PROXY
+              value: "{{ .Values.proxy.httpsProxy }}"
+            - name: NO_PROXY
+              value: "{{ template "harbor.noProxy" . }}"
+            {{- end }}
             {{- with .Values.registry.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           livenessProbe:
             httpGet:
               path: /api/health
-              port: ctl
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /api/health
-              port: ctl
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
-            - name: tmp
-              mountPath: /tmp
             {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
             {{- end }}
+            - name: registry-config
+              mountPath: /etc/registry/config.yml
+              subPath: config.yml
+            - name: registry-config
+              mountPath: /etc/registryctl/config.yml
+              subPath: ctl-config.yml
       volumes:
-        - name: tmp
-          emptyDir: {}
+        - name: registry-htpasswd
+          secret:
+            items:
+              - key: REGISTRY_HTPASSWD
+                path: passwd
+            secretName: {{ include "harbor.registry.name" . }}-htpasswd
+        - configMap:
+            name: {{ include "harbor.registry.name" . }}
+          name: registry-config
         {{- if eq .Values.registry.storage.type "filesystem" }}
         - name: storage
           {{- if .Values.registry.persistence.existingClaim }}
@@ -124,7 +174,7 @@ spec:
             claimName: {{ .Values.registry.persistence.existingClaim }}
           {{- else if .Values.registry.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ include "harbor.fullname" . }}-registry
+            claimName: {{ include "harbor.registry.name" . }}
           {{- else }}
           emptyDir: {}
           {{- end }}
