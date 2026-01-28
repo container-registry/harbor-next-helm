@@ -56,7 +56,7 @@ spec:
       {{- end }}
       containers:
         - name: trivy
-          image: {{ .Values.trivy.image.repository }}{{ if .Values.trivy.image.tag }}:{{ .Values.trivy.image.tag }}{{ else }}{{ end }}
+          image: {{ include "harbor.image" (dict "imageRoot" .Values.trivy.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           {{- if not (empty .Values.containerSecurityContext) }}
           securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 12 }}
