@@ -46,12 +46,6 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "harbor.registry.name" . }}
-          env:
-            - name: REGISTRY_HTTP_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "harbor.registry.name" . }}
-                  key: REGISTRY_HTTP_SECRET
             {{- with .Values.registry.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -70,10 +64,8 @@ spec:
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
-            {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
-            {{- end }}
             {{- if and (eq .Values.registry.storage.type "gcs") .Values.registry.storage.gcs.keyfile }}
             - name: gcs-key
               mountPath: /etc/registry/gcs
@@ -147,10 +139,8 @@ spec:
           resources:
             {{- toYaml .Values.registry.resources | nindent 12 }}
           volumeMounts:
-            {{- if eq .Values.registry.storage.type "filesystem" }}
             - name: storage
               mountPath: {{ .Values.registry.storage.filesystem.rootdirectory | default "/storage" }}
-            {{- end }}
             - name: registry-config
               mountPath: /etc/registry/config.yml
               subPath: config.yml
@@ -167,18 +157,13 @@ spec:
         - configMap:
             name: {{ include "harbor.registry.name" . }}
           name: registry-config
-        {{- if eq .Values.registry.storage.type "filesystem" }}
         - name: storage
-          {{- if .Values.registry.persistence.existingClaim }}
+          {{- if and .Values.registry.persistence.existingClaim (not eq .Values.registry.storage.type "filesystem") }}
           persistentVolumeClaim:
             claimName: {{ .Values.registry.persistence.existingClaim }}
-          {{- else if .Values.registry.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ include "harbor.registry.name" . }}
           {{- else }}
           emptyDir: {}
           {{- end }}
-        {{- end }}
         {{- if and (eq .Values.registry.storage.type "gcs") .Values.registry.storage.gcs.keyfile }}
         - name: gcs-key
           secret:

@@ -85,50 +85,6 @@ data:
         {{- if $storage.s3.multipartcopythresholdsize }}
         multipartcopythresholdsize: {{ $storage.s3.multipartcopythresholdsize }}
         {{- end }}
-      {{- else if eq $type "swift" }}
-      swift:
-        authurl: {{ $storage.swift.authurl }}
-        username: {{ $storage.swift.username }}
-        container: {{ $storage.swift.container }}
-        {{- if $storage.swift.region }}
-        region: {{ $storage.swift.region }}
-        {{- end }}
-        {{- if $storage.swift.tenant }}
-        tenant: {{ $storage.swift.tenant }}
-        {{- end }}
-        {{- if $storage.swift.tenantid }}
-        tenantid: {{ $storage.swift.tenantid }}
-        {{- end }}
-        {{- if $storage.swift.domain }}
-        domain: {{ $storage.swift.domain }}
-        {{- end }}
-        {{- if $storage.swift.domainid }}
-        domainid: {{ $storage.swift.domainid }}
-        {{- end }}
-        {{- if $storage.swift.trustid }}
-        trustid: {{ $storage.swift.trustid }}
-        {{- end }}
-        {{- if $storage.swift.insecureskipverify }}
-        insecureskipverify: {{ $storage.swift.insecureskipverify }}
-        {{- end }}
-        {{- if $storage.swift.chunksize }}
-        chunksize: {{ $storage.swift.chunksize }}
-        {{- end }}
-        {{- if $storage.swift.prefix }}
-        prefix: {{ $storage.swift.prefix }}
-        {{- end }}
-        {{- if $storage.swift.authversion }}
-        authversion: {{ $storage.swift.authversion }}
-        {{- end }}
-        {{- if $storage.swift.endpointtype }}
-        endpointtype: {{ $storage.swift.endpointtype }}
-        {{- end }}
-        {{- if $storage.swift.tempurlcontainerkey }}
-        tempurlcontainerkey: {{ $storage.swift.tempurlcontainerkey }}
-        {{- end }}
-        {{- if $storage.swift.tempurlmethods }}
-        tempurlmethods: {{ $storage.swift.tempurlmethods }}
-        {{- end }}
       {{- else if eq $type "oss" }}
       oss:
         accesskeyid: {{ $storage.oss.accesskeyid }}
