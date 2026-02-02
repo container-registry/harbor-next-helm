@@ -556,38 +556,7 @@ Usage: {{ include "harbor.tlsSecretName" (dict "root" . "component" "core") }}
 {{- end }}
 
 {{- define "harbor.autoGenCert" -}}
-  {{- if and .Values.tls.enabled (eq .Values.tls.certSource "auto") -}}
-    {{- printf "true" -}}
-  {{- else -}}
-    {{- printf "false" -}}
-  {{- end -}}
-{{- end -}}
-
-{{- define "harbor.autoGenCertForIngress" -}}
-  {{- if eq (include "harbor.autoGenCert" .) "true" -}}
-    {{- printf "true" -}}
-  {{- else -}}
-    {{- printf "false" -}}
-  {{- end -}}
-{{- end -}}
-
-
-{{- define "harbor.tlsCoreSecretForIngress" -}}
-  {{- if eq .Values.tls.certSource "none" -}}
-    {{- printf "" -}}
-  {{- else if eq .Values.tls.certSource "secret" -}}
-    {{- .Values.tls.secret.secretName -}}
-  {{- else -}}
-    {{- include "harbor.ingress" . -}}
-  {{- end -}}
-{{- end -}}
-
-{{- define "harbor.tlsSecretForNginx" -}}
-  {{- if eq .Values.tls.certSource "secret" -}}
-    {{- .Values.tls.secret.secretName -}}
-  {{- else -}}
-    {{- include "harbor.nginx" . -}}
-  {{- end -}}
+  {{- .Values.ingress.autoGenCert -}}
 {{- end -}}
 
 {{- define "harbor.metrics.portName" -}}
