@@ -66,6 +66,8 @@ proxy:
 
 # -- Ingress configuration
 ingress:
+  # tls certificate auto-generated
+  autoGenCert: true
   # -- Enable ingress
   enabled: true
   # -- Ingress class name
@@ -663,11 +665,11 @@ valkey:
     enabled: false
     password: ""
   fullnameOverride: "valkey"
-  # -- Valkey master configuration                                                            
-  master:                                                                                     
-    persistence:                                                                              
-      enabled: false
-
+  # -- Valkey persistence configuration
+  dataStorage:
+    enabled: false
+  # securityContext: {}
+  # podSecurityContext: {}
 
 # --- External Redis (when valkey.enabled=false) ---
 externalRedis:
@@ -693,7 +695,7 @@ trivy:
   enabled: false
   image:
     # -- Trivy adapter image repository
-    repository: goharbor/trivy-adapter-photon
+    repository: 8gears.container-registry.com/8gcr/trivy-adapter
     # -- Trivy adapter image tag (defaults to appVersion)
     tag: ""
   # -- Number of Trivy replicas
