@@ -668,8 +668,19 @@ valkey:
   # -- Valkey persistence configuration
   dataStorage:
     enabled: false
-  # securityContext: {}
-  # podSecurityContext: {}
+
+  podSecurityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
 
 # --- External Redis (when valkey.enabled=false) ---
 externalRedis:
