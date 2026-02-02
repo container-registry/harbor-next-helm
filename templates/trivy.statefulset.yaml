@@ -36,9 +36,6 @@ spec:
 {{- if .Values.trivy.serviceAccountName }}
       serviceAccountName: {{ .Values.trivy.serviceAccountName }}
 {{- end }}
-      securityContext:
-        runAsUser: 10000
-        fsGroup: 10000
       automountServiceAccountToken: {{ .Values.trivy.automountServiceAccountToken | default false }}
 {{- with .Values.trivy.topologySpreadConstraints}}
       topologySpreadConstraints:
@@ -58,9 +55,8 @@ spec:
         - name: trivy
           image: {{ include "harbor.image" (dict "imageRoot" .Values.trivy.image "global" .Values.image "chart" .Chart) }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          {{- if not (empty .Values.containerSecurityContext) }}
-          securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 12 }}
-          {{- end }}
+          securityContext:
+            {{- toYaml .Values.trivy.securityContext | nindent 12 }}
           env:
           {{- if has "trivy" .Values.proxy.components }}
             - name: HTTP_PROXY
