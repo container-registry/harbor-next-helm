@@ -31,8 +31,14 @@ spec:
     spec:
       {{- include "harbor.imagePullSecrets" . | nindent 6 }}
       volumes:
-        - emptyDir: {}
-          name: data
+      {{- if .Values.trivy.persistence.enabled }}
+      - name: "data"
+        persistentVolumeClaim:
+          claimName: {{ .Values.trivy.persistence.existingClaim | default "data-" (include "harbor.trivy" .) }}
+      {{- else }}
+       - name: "data"
+        emptyDir: {}
+      {{- end }}
 {{- if .Values.trivy.serviceAccountName }}
       serviceAccountName: {{ .Values.trivy.serviceAccountName }}
 {{- end }}
@@ -148,4 +154,26 @@ spec:
             failureThreshold: 3
           resources:
 {{ toYaml .Values.trivy.resources | indent 12 }}
+{{- if and .Values.trivy.persistence.enabled (not .Values.trivy.persistence.existingClaim) }}
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: data
+      labels:
+        {{- include "harbor.componentLabels" (dict "root" . "component" "trivy") | nindent 8 }}
+      {{- with .Values.trivy.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+        {{- toYaml .Values.registry.persistence.accessModes | nindent 8 }}
+      {{- if .Values.trivy.persistence.storageClass }}
+      storageClassName: {{ .Values.trivy.persistence.storageClass | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.trivy.persistence.size | quote }}
+{{- end }}
 {{- end }}

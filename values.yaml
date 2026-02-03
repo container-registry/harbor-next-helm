@@ -314,7 +314,7 @@ registry:
     accessModes:
       - ReadWriteOnce
     # -- PVC size
-    size: 50Gi
+    size: 10Gi
     # -- Existing PVC name (disables dynamic provisioning)
     existingClaim: ""
     # -- Annotations for PVC
@@ -540,6 +540,22 @@ jobservice:
   podSecurityContext:
     fsGroup: 10000
 
+  # -- Jobservice persistence settings
+  persistence:
+    # -- Enable persistence for registry
+    enabled: true
+    # -- Storage class for PVC
+    storageClass: ""
+    # -- PVC access modes
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC size
+    size: 1Gi
+    # -- Existing PVC name (disables dynamic provisioning)
+    existingClaim: ""
+    # -- Annotations for PVC
+    annotations: {}
+
 # --- Exporter ---
 exporter:
   # -- Enable Harbor exporter for Prometheus metrics
@@ -753,6 +769,22 @@ trivy:
   # -- Pod security context for Trivy
   podSecurityContext:
     fsGroup: 10000
+
+  # -- Trivy persistence settings - used for cache
+  persistence:
+    # -- Enable persistence for registry
+    enabled: true
+    # -- Storage class for PVC
+    storageClass: ""
+    # -- PVC access modes
+    accessModes:
+      - ReadWriteOnce
+    # -- PVC size
+    size: 5Gi
+    # -- Existing PVC name (disables dynamic provisioning)
+    existingClaim: ""
+    # -- Annotations for PVC
+    annotations: {}
 
 # ============================================================================
 # 5. TLS CONFIGURATION

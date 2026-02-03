@@ -85,7 +85,12 @@ spec:
           configMap:
             name: "{{ template "harbor.jobservice" . }}"
         - name: job-logs
+          {{- if and .Values.jobservice.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.jobservice.persistence.existingClaim | default (include "harbor.jobservice" .) }}
+          {{- else }}
           emptyDir: {}
+          {{- end }}
         - name: tmp
           emptyDir: {}
       {{- with .Values.jobservice.nodeSelector }}

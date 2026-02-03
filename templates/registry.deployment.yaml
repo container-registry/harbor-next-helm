@@ -158,9 +158,9 @@ spec:
             name: {{ include "harbor.registry.name" . }}
           name: registry-config
         - name: storage
-          {{- if and .Values.registry.persistence.existingClaim (not eq .Values.registry.storage.type "filesystem") }}
+          {{- if and .Values.registry.persistence.enabled (eq .Values.registry.storage.type "filesystem") }}
           persistentVolumeClaim:
-            claimName: {{ .Values.registry.persistence.existingClaim }}
+            claimName: {{ .Values.registry.persistence.existingClaim | default (include "harbor.registry" .) }}
           {{- else }}
           emptyDir: {}
           {{- end }}
