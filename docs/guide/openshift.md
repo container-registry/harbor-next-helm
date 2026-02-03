@@ -70,4 +70,5 @@ reference it in the values.
 
 # Access Harbor
 
-Harbor, after a successful deployment, should be available on the `externalURL` provided. If it does not work, check the events.
+Harbor, after a successful deployment, should be available on the `externalURL`
+provided. If it does not work, check the events on the dashboard of Openshift.
