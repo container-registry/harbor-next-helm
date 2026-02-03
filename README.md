@@ -160,7 +160,6 @@ helm uninstall my-harbor --namespace harbor
 | Repository | Name | Version |
 |------------|------|---------|
 | https://valkey.io/valkey-helm/ | valkey | 0.9.x |
-| https://aquasecurity.github.io/helm-charts/ | harbor-scanner-trivy | 0.x.x |
 
 ## Configuration
 
