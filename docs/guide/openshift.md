@@ -1,47 +1,43 @@
-# Deploying Harbor on Openshift
+# Deploying Harbor on OpenShift
 
-## Set URL
+## Configuration Steps
 
-externalURL must be replaced by the public URL provided by Openshift. In our case it is:
+### Set the External URL
+Replace the `externalURL` with the public URL provided by OpenShift:
 
 ```yaml
 externalURL: "https://alex-container-regis-dev.apps.rm2.thpm.p1.openshiftapps.com"
 ```
 
-## Ingress
+### Configure Ingress
+OpenShift requires specific annotations and host configurations for routing to work.
 
-Openshift needs an annotation for routing to work. We add the termination type:
+1. Add the `route.openshift.io/termination` annotation.
+2. Set the `core` and `hosts` fields to the provided URL.
 
 ```yaml
-  annotations:
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-    route.openshift.io/termination: edge
+annotations:
+  route.openshift.io/termination: edge
+
+core: "alex-container-regis-dev.apps.rm2.thpm.p1.openshiftapps.com"
+hosts:
+  - host: alex-container-regis-dev.apps.rm2.thpm.p1.openshiftapps.com
+    paths:
+      - path: /
+        pathType: Prefix
 ```
 
-Hosts and core must be set to the URL provided by Openshift. For example:
+### Manage Security Contexts
+Because OpenShift automatically sets security contexts during deployment, you must initialize the main settings to empty objects. For the `valkey` section, set specific fields to `null`.
 
-```yaml
-  core: "alex-container-regis-dev.apps.rm2.thpm.p1.openshiftapps.com"
-  # -- Additional ingress hosts
-  hosts:
-    - host: alex-container-regis-dev.apps.rm2.thpm.p1.openshiftapps.com
-      paths:
-        - path: /
-          pathType: Prefix
-```
-
-## Security contexts
-
-`securityContext` and `podSecurityContext` are automatically set during deployment so we initialize it to empty objects:
-
-```yaml
+- Main configuration:
+  ```yaml
   securityContext: {}
   podSecurityContext: {}
-```
+  ```
 
-In `valkey` section, we set `securityContext` and `podSecurityContext` to null values:
-
-```yaml
+- Valkey configuration:
+  ```yaml
   securityContext:
     readOnlyRootFilesystem: null
     runAsNonRoot: null
@@ -51,11 +47,10 @@ In `valkey` section, we set `securityContext` and `podSecurityContext` to null v
     fsGroup: null
     runAsUser: null
     runAsGroup: null
-```
+  ```
 
-## Storage class
-
-`storageClass` fields are set to `gp3` in each persistence section (default on Openshift):
+### Set Storage Class
+Configure the `storageClass` to `gp3` (the default on OpenShift) in every persistence section:
 
 ```yaml
 persistence:
@@ -63,12 +58,10 @@ persistence:
   storageClass: "gp3"
 ```
 
-# Deploying a postgresql database for Harbor
+## Database Deployment
 
-To have a working Harbor deployment, we can install any Postgresql database and
-reference it in the values.
+To ensure a working Harbor deployment, install a compatible PostgreSQL database and reference it in your configuration values.
 
-# Access Harbor
+## Accessing Harbor
 
-Harbor, after a successful deployment, should be available on the `externalURL`
-provided. If it does not work, check the events on the dashboard of Openshift.
+After deployment, Harbor will be available at the configured `externalURL`. If access fails, check the events in the OpenShift dashboard for troubleshooting.

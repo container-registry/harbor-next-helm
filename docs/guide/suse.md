@@ -1,10 +1,9 @@
-# Create a Harbor deployment on rancher
+# Create a Harbor deployment on Rancher
 
 ## Supported versions
 
-Rancher manager >= 2.13.1
-
-RKE2 >= v1.34.3+rke2r1 (1b103f296ab20fac6b32951c9efe59d28a5ed79f)
+- Rancher manager >= 2.13.1
+- RKE2 >= v1.34.3+rke2r1 (1b103f296ab20fac6b32951c9efe59d28a5ed79f)
 
 ## Deploy a database
 
@@ -60,8 +59,7 @@ Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
 ```
 
-Then we connect to our database from the host by entering the password given
-during installation:
+Then we connect to our database from the host by entering the password given during installation:
 
 ```bash
 psql -h localhost -U postgres -p 5432
@@ -78,15 +76,25 @@ postgres=# exit
 
 ## Deploy Harbor next
 
-We pull the Helm chart and decompress it:
+We pull the Helm chart from the OCI repository. First, log in to the registry if authentication is required:
 
 ```bash
-helm pull https://8gears.container-registry.com/harbor-next/chart/harbor
-tar xzvf harbor-x.x.x.tgz
+helm registry login 8gears.container-registry.com
 ```
 
-We update `values.yaml` to set the hostname, port and credentials of our
-database we will use with Harbor:
+We pull the chart using the OCI reference:
+
+```bash
+helm pull oci://8gears.container-registry.com/harbor-next/harbor
+```
+
+Decompress the downloaded chart:
+
+```bash
+tar xzvf harbor-*.tgz
+```
+
+We update `values.yaml` to set the hostname, port and credentials of our database we will use with Harbor:
 
 ```yaml
 database:
@@ -97,9 +105,7 @@ database:
   database: registry
 ```
 
-The hostname chosen for our local deployment is the default,
-`harbor.example.com`. To override our DNS resolver, we set a mapping to localhost in
-`/etc/hosts`:
+The hostname chosen for our local deployment is the default, `harbor.example.com`. To override our DNS resolver, we set a mapping to localhost in `/etc/hosts`:
 
 ```
 127.0.0.1 harbor.example.com
@@ -127,8 +133,7 @@ test-1-harbor-scanner-trivy-0               1/1     Running   0             61s
 test-1-valkey-59486f6977-nqb2z              1/1     Running   0             61s
 ```
 
-Since RKE2 comes with an Nginx ingress deployed by default, we can access the
-portal from a browser at:
+Since RKE2 comes with an Nginx ingress deployed by default, we can access the portal from a browser at:
 
 ```
 https://harbor.example.com
