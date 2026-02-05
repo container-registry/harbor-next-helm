@@ -60,7 +60,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "harbor.database.secretName" . }}
-                  key: POSTGRESQL_PASSWORD
+                  key: {{ .Values.database.existingSecretKey | default "POSTGRESQL_PASSWORD" }}
             {{- if .Values.valkey.auth.enabled }}
             - name: REDIS_PASSWORD
               valueFrom:

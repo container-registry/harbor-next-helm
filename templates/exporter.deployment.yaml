@@ -65,7 +65,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "harbor.database.secretName" . }}
-                  key: POSTGRESQL_PASSWORD
+                  key: {{ .Values.database.existingSecretKey | default "POSTGRESQL_PASSWORD" }}
             - name: HARBOR_DATABASE_DBNAME
               value: {{ include "harbor.database.database" . | quote }}
             - name: HARBOR_DATABASE_SSLMODE

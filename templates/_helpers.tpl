@@ -233,13 +233,6 @@ Return the database sslmode
 {{- end }}
 
 {{/*
-Return the full database URL for Core
-*/}}
-{{- define "harbor.database.coreUrl" -}}
-postgresql://{{ include "harbor.database.username" . }}:$(POSTGRESQL_PASSWORD)@{{ include "harbor.database.host" . }}:{{ include "harbor.database.port" . }}/{{ include "harbor.database.database" . }}?sslmode={{ include "harbor.database.sslmode" . }}
-{{- end }}
-
-{{/*
 =============================================================================
 Redis helpers
 =============================================================================

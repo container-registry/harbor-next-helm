@@ -307,7 +307,7 @@ registry:
   # -- Registry persistence settings
   persistence:
     # -- Enable persistence for registry
-    enabled: true
+    enabled: false
     # -- Storage class for PVC
     storageClass: ""
     # -- PVC access modes
@@ -543,7 +543,7 @@ jobservice:
   # -- Jobservice persistence settings
   persistence:
     # -- Enable persistence for registry
-    enabled: true
+    enabled: false
     # -- Storage class for PVC
     storageClass: ""
     # -- PVC access modes
@@ -667,8 +667,9 @@ database:
   # -- Maximum lifetime of connections (0 = no limit)
   connMaxLifetime: "0"
   # -- Existing secret containing database credentials
-  # Must have key: POSTGRESQL_PASSWORD
+  # Default secret key: POSTGRESQL_PASSWORD
   existingSecret: ""
+  existingSecretKey: ""
 
 # --- Valkey (Redis-compatible) ---
 valkey:
@@ -773,7 +774,7 @@ trivy:
   # -- Trivy persistence settings - used for cache
   persistence:
     # -- Enable persistence for registry
-    enabled: true
+    enabled: false
     # -- Storage class for PVC
     storageClass: ""
     # -- PVC access modes

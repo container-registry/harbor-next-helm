@@ -36,7 +36,7 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.trivy.persistence.existingClaim | default "data-" (include "harbor.trivy" .) }}
       {{- else }}
-       - name: "data"
+      - name: "data"
         emptyDir: {}
       {{- end }}
 {{- if .Values.trivy.serviceAccountName }}
