@@ -1,4 +1,4 @@
-{{- if and (eq .Values.registry.storage.type "filesystem") .Values.registry.persistence.enabled (not .Values.registry.persistence.existingClaim) }}
+{{- if and (eq .Values.jobservice.storage.type "filesystem") .Values.jobservice.persistence.enabled (not .Values.jobservice.persistence.existingClaim) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -12,7 +12,7 @@ metadata:
 spec:
   accessModes:
     {{- toYaml .Values.jobservice.persistence.accessModes | nindent 4 }}
-  {{- if .Values.registry.persistence.storageClass }}
+  {{- if .Values.jobservice.persistence.storageClass }}
   storageClassName: {{ .Values.jobservice.persistence.storageClass | quote }}
   {{- end }}
   resources:
