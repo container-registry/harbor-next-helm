@@ -25,9 +25,6 @@ spec:
       interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
       honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels | default true }}
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
-          targetLabel: component
     {{- if .Values.exporter.enabled }}
     # Exporter metrics
     - port: {{ include "harbor.metrics.portName" . | quote }}
@@ -35,8 +32,5 @@ spec:
       interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
       honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels | default true }}
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
-          targetLabel: component
     {{- end }}
 {{- end }}
