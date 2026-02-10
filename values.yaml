@@ -35,7 +35,7 @@ fullnameOverride: ""
 # -- External URL for Harbor (REQUIRED)
 # This is the URL users will use to access Harbor (e.g., https://harbor.example.com)
 # @default -- ""
-externalURL: "https://test-1-alex.container-registry.com"
+externalURL: ""
 
 # -- Log level for all components (debug, info, warning, error, fatal)
 logLevel: info
@@ -71,24 +71,24 @@ ingress:
   # -- Enable ingress
   enabled: true
   # -- Ingress class name
-  className: "nginx"
+  className: ""
   # -- Ingress annotations
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  annotations: {}
+    # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
   # -- Harbor core hostname (REQUIRED when ingress enabled)
-  core: "test-1-alex.container-registry.com"
+  core: ""
   # -- Additional ingress hosts
-  hosts:
-    - host: test-1-alex.container-registry.com
-      paths:
-        - path: /
-          pathType: Prefix
+  hosts: []
+    # - host: harbor.example.com
+    #   paths:
+    #     - path: /
+    #       pathType: Prefix
   # -- Ingress TLS configuration
-  tls:
-    - secretName: harbor-tls
-      hosts:
-        - test-1-alex.container-registry.com
+  tls: []
+    # - secretName: harbor-tls
+    #   hosts:
+    #     - harbor.example.com
 
 # -- Gateway API configuration (alternative to ingress)
 gateway:
@@ -307,7 +307,7 @@ registry:
   # -- Registry persistence settings
   persistence:
     # -- Enable persistence for registry
-    enabled: true
+    enabled: false
     # -- Storage class for PVC
     storageClass: ""
     # -- PVC access modes
@@ -363,7 +363,7 @@ registry:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
-    # readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     capabilities:
       drop:
@@ -374,7 +374,6 @@ registry:
   # -- Pod security context for Registry
   podSecurityContext:
     fsGroup: 10000
-    fsGroupChangePolicy: OnRootMismatch
 
 # --- Portal ---
 portal:
@@ -648,11 +647,11 @@ exporter:
 # --- Database (EXTERNAL ONLY) ---
 database:
   # -- Database host (required)
-  host: "harbor-db-rw"
+  host: ""
   # -- Database port
   port: 5432
   # -- Database username
-  username: "harbor"
+  username: ""
   # -- Database password (ignored if existingSecret is set)
   password: ""
   # -- Database name
@@ -669,8 +668,8 @@ database:
   connMaxLifetime: "0"
   # -- Existing secret containing database credentials
   # Default secret key: POSTGRESQL_PASSWORD
-  existingSecret: "harbor-db-app"
-  existingSecretKey: "password"
+  existingSecret: ""
+  existingSecretKey: ""
 
 # --- Valkey (Redis-compatible) ---
 valkey:
@@ -721,7 +720,7 @@ externalRedis:
 # --- Trivy Scanner ---
 trivy:
   # -- Enable Trivy scanner
-  enabled: true
+  enabled: false
   image:
     # -- Trivy adapter image repository
     repository: 8gears.container-registry.com/8gcr/trivy-adapter
@@ -829,11 +828,11 @@ tls:
 
 metrics:
   # -- Enable metrics endpoints on all components
-  enabled: true
+  enabled: false
   # -- Enable Prometheus ServiceMonitor
   serviceMonitor:
     # -- Create ServiceMonitor resource
-    enabled: true
+    enabled: false
     # -- ServiceMonitor namespace (defaults to release namespace)
     namespace: ""
     # -- Additional labels for ServiceMonitor
@@ -852,19 +851,7 @@ metrics:
 # -- Extra static manifests to deploy
 # These are merged with chart labels and deployed as-is
 # @default -- []
-extraManifests:
-  - apiVersion: postgresql.cnpg.io/v1
-    kind: Cluster
-    metadata:
-      name: harbor-db
-    spec:
-      instances: 1
-      storage:
-        size: 10Gi
-      bootstrap:
-        initdb:
-          database: registry
-          owner: harbor
+extraManifests: []
   # - apiVersion: v1
   #   kind: ConfigMap
   #   metadata:
