@@ -738,6 +738,13 @@ trivy:
       memory: 1Gi
   # -- Debug mode for more verbose scanning log
   debugMode: false
+  dbRepository:
+    - mirror.gcr.io/aquasec/trivy-db
+    - ghcr.io/aquasecurity/trivy-db
+  javaDBRepository:
+    - mirror.gcr.io/aquasec/trivy-java-db
+    - ghcr.io/aquasecurity/trivy-java-db
+  securityCheck: "vuln"
   # -- Vulnerability types to scan (os,library)
   vulnType: "os,library"
   # -- Severity levels to check
