@@ -363,7 +363,7 @@ registry:
     runAsNonRoot: true
     runAsUser: 10000
     runAsGroup: 10000
-    readOnlyRootFilesystem: true
+    # readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
     capabilities:
       drop:
@@ -374,6 +374,7 @@ registry:
   # -- Pod security context for Registry
   podSecurityContext:
     fsGroup: 10000
+    fsGroupChangePolicy: OnRootMismatch
 
 # --- Portal ---
 portal:
