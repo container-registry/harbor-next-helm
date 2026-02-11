@@ -19,18 +19,9 @@ spec:
     matchNames:
       - {{ .Release.Namespace }}
   endpoints:
-    # Core metrics
     - port: {{ include "harbor.metrics.portName" . | quote }}
       path: /metrics
       interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
       honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels | default true }}
-    {{- if .Values.exporter.enabled }}
-    # Exporter metrics
-    - port: {{ include "harbor.metrics.portName" . | quote }}
-      path: /metrics
-      interval: {{ .Values.metrics.serviceMonitor.interval | default "30s" }}
-      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}
-      honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels | default true }}
-    {{- end }}
 {{- end }}
