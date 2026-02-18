@@ -1,6 +1,6 @@
 # Deploy Harbor on Nutanix Cloud Platform
 
-## Deploy a Local CNPG System to Deploy the Database in the Same Namespace
+## Deploy a Local CNPG System
 
 Install CNPG:
 
@@ -28,7 +28,7 @@ helm install loki grafana/loki-stack \
 
 ### Alloy
 
-Create a file to override the default values:
+Create a file to override the default values (see [here](https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/#pods-logs) for more):
 
 ```bash
 cat > alloy-values.yaml <<EOF
@@ -116,7 +116,7 @@ helm install nginx-ingress ingress-nginx/ingress-nginx \
 
 ### Traefik
 
-Traefik is installed by default, so no additional steps are required in this case.
+Traefik is installed by default, so no additional steps are required if it is used.
 
 ## Deploy Harbor
 
@@ -198,14 +198,6 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls: "true"
 ```
 
-#### Other Settings
-
-Set the replica count for each pod as required. For example, to run 3 replicas:
-
-```yaml
-replicas: 3
-```
-
 #### Database
 
 Configure Harbor to use the external PostgreSQL database deployed with CNPG:
@@ -244,6 +236,14 @@ extraManifests:
         initdb:
           database: registry
           owner: harbor
+```
+
+#### Other Settings
+
+Set the replica count for each pod as required. For example, to run 3 replicas:
+
+```yaml
+replicas: 3
 ```
 
 ### Apply Manifests
