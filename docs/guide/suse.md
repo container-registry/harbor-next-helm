@@ -1,4 +1,4 @@
-# Create a Harbor deployment on Rancher
+# Create a Harbor deployment on SUSE Rancher
 
 ## Supported versions
 
